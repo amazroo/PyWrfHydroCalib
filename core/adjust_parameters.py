@@ -51,7 +51,8 @@ def main(argv):
     # Compose input file paths.
     fullDomOrig = workDir + "/BASELINE_PARAMETERS/Fulldom.nc"
     hydroOrig = workDir + "/BASELINE_PARAMETERS/HYDRO_TBL_2D.nc"
-    soilOrig = workDir + "/BASELINE_PARAMETERS/soil_properties.nc"
+    #soilOrig = workDir + "/BASELINE_PARAMETERS/soil_properties.nc"
+    soilOrig = workDir + "/BASELINE_PARAMETERS/lis.nc"
     gwOrig = workDir + "/BASELINE_PARAMETERS/GWBUCKPARM.nc"
     chanParmOrig = workDir + "/BASELINE_PARAMETERS/CHANPARM.TBL"
     rCompletePath = workDir + "/R_COMPLETE"
@@ -60,11 +61,14 @@ def main(argv):
     # Compose output file paths.
     fullDomOut = runDir + "/Fulldom.nc"
     hydroOut = runDir + "/HYDRO_TBL_2D.nc"
-    soilOut = runDir + "/soil_properties.nc"
+    #soilOut = runDir + "/soil_properties.nc"
+    soilOut = runDir + "/lis.nc"
     gwOut = runDir + '/GWBUCKPARM.nc'
     chanParmOut = runDir + "/CHANPARM.TBL"
     outFlag = workDir + "/CALIB_ITER.COMPLETE"
-    
+    rtOrig = workDir + "/BASELINE_PARAMETERS/RouteLink.nc"
+    rtOut = runDir + "/RouteLink.nc"
+
     # If R COMPLETE flag not present, this implies the R code didn't run
     # to completion.
     if not os.path.isfile(rCompletePath):
@@ -79,6 +83,7 @@ def main(argv):
     # If the params_new file is not present, but the R Complete path was,
     # we are going to assume this was the last iteration and no parameters
     # need to be produced.
+    print("Start")
     if not os.path.isfile(adjTbl):
         # Touch empty COMPLETE flag file. This will be seen by workflow, demonstrating
         # calibration iteration is complete.
@@ -87,19 +92,24 @@ def main(argv):
             sys.exit(0)
         except:
             sys.exit(2)
-    
+    print("start 1") 
     try:
         shutil.copy(fullDomOrig,fullDomOut)
         shutil.copy(hydroOrig,hydroOut)
         shutil.copy(soilOrig,soilOut)
         if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
             shutil.copy(gwOrig,gwOut)
+
+        if args.chRtFlag[0] == 2:
+            # TML: Muskingum Channel Routing
+            shutil.copy(rtOrig,rtOut)
         if args.chRtFlag[0] == 3:
             # Gridded routing
             shutil.copy(chanParmOrig,chanParmOut)
-    except:
+    except Exception as e:
+        print(str(e))
         sys.exit(3)
-        
+    print("here")    
     # Read in new parameters table.
     newParams = pd.read_csv(adjTbl,sep=' ')
     paramNames = list(newParams.columns.values)
@@ -138,14 +148,16 @@ def main(argv):
                 chanParmOutObj.write(outStr)
             countTmp = countTmp + 1
         chanParmOutObj.close()
-        
+   
+    print("Step1 complete")
     # Open NetCDF parameter files for adjustment.
     idFullDom = Dataset(fullDomOut,'a')
     idSoil2D = Dataset(soilOut,'a')
     if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
         idGw = Dataset(gwOut,'a')
     idHydroTbl = Dataset(hydroOut,'a')
-    
+    if args.chRtFlag[0] == 2:
+        idRt = Dataset(rtOut,'a')
     # if we are going to use the mask, read in the file
     if args.enableMask[0] == 1:
        maskFile = workDir + "/mask.coarse.tif"
@@ -157,38 +169,39 @@ def main(argv):
 
     for param in paramNames:
         if args.enableMask[0] == 0:
+            print("Step2")
             if param == "bexp":
-                idSoil2D.variables['bexp'][:,:,:,:] = idSoil2D.variables['bexp'][:,:,:,:]*float(newParams.bexp[0])
-
+                idSoil2D.variables['BEXP'][:,:] = idSoil2D.variables['BEXP'][:,:]*float(newParams.bexp[0])
+            print("Step3")
             if param == "smcmax":
-                idSoil2D.variables['smcmax'][:,:,:,:] = idSoil2D.variables['smcmax'][:,:,:,:]*float(newParams.smcmax[0])
+                idSoil2D.variables['SMCMAX'][:,:] = idSoil2D.variables['SMCMAX'][:,:]*float(newParams.smcmax[0])
 
             if param == "slope":
-                idSoil2D.variables['slope'][:,:,:] = float(newParams.slope[0])
+                idSoil2D.variables['SLOPE0'][:,:] = float(newParams.slope[0])
 
             if param == "lksatfac":
                 idFullDom.variables['LKSATFAC'][:,:] = float(newParams.lksatfac[0])
 
             if param == "cwpvt":
-                idSoil2D.variables['cwpvt'][:,:,:] = idSoil2D.variables['cwpvt'][:,:,:]*float(newParams.cwpvt[0])
+                idSoil2D.variables['CWPVT'][:,:] = idSoil2D.variables['CWPVT'][:,:]*float(newParams.cwpvt[0])
 
             if param == "vcmx25":
-                idSoil2D.variables['vcmx25'][:,:,:] = idSoil2D.variables['vcmx25'][:,:,:]*float(newParams.vcmx25[0])
+                idSoil2D.variables['VCMX25'][:,:] = idSoil2D.variables['VCMX25'][:,:]*float(newParams.vcmx25[0])
 
             if param == "mp":
-                idSoil2D.variables['mp'][:,:,:] = idSoil2D.variables['mp'][:,:,:]*float(newParams.mp[0])
+                idSoil2D.variables['MP'][:,:] = idSoil2D.variables['MP'][:,:]*float(newParams.mp[0])
 
             if param == "hvt":
                 idSoil2D.variables['hvt'][:,:,:] = idSoil2D.variables['hvt'][:,:,:]*float(newParams.hvt[0])
 
             if param == "mfsno":
-                idSoil2D.variables['mfsno'][:,:,:] = idSoil2D.variables['mfsno'][:,:,:]*float(newParams.mfsno[0])
+                idSoil2D.variables['MFSNO'][:,:] = idSoil2D.variables['MFSNO'][:,:]*float(newParams.mfsno[0])
 
             if param == "refkdt":
-                idSoil2D.variables['refkdt'][:,:,:] = float(newParams.refkdt[0])
+                idSoil2D.variables['REFKDT'][:,:] = float(newParams.refkdt[0])
 
             if param == "dksat":
-                idSoil2D.variables['dksat'][:,:,:,:] = idSoil2D.variables['dksat'][:,:,:,:]*float(newParams.dksat[0])
+                idSoil2D.variables['DKSAT'][:,:] = idSoil2D.variables['DKSAT'][:,:]*float(newParams.dksat[0])
 
             if param == "retdeprtfac":
                 idFullDom.variables['RETDEPRTFAC'][:,:] = float(newParams.retdeprtfac[0])
@@ -300,40 +313,54 @@ def main(argv):
                 if param == 'Coeff':
                     idGw.variables['Coeff'][:] = float(newParams.Coeff[0])
 
+            # ADDED BY TML TO SUPPORT CHANNEL PARAMETERS IN RouteLink.nc file:
+            if args.chRtFlag[0] == 2:
+                if param == "Kchan":
+                    idRt.variables['Kchan'][:] = idRt.variables['Kchan'][:]*float(newParams.Kchan[0])
+
+                if param == "MannN":
+                    idRt.variables['n'][:] = idRt.variables['n'][:]*float(newParams.MannN[0])
+
+                if param == "Bw":
+                    idRt.variables['BtmWdth'][:] = idRt.variables['BtmWdth'][:]*float(newParams.Bw[0])
+
+                if param == "ChSSlp":
+                    idRt.variables['ChSlp'][:] = idRt.variables['ChSlp'][:]*float(newParams.ChSSlp[0])
+
 
         if args.enableMask[0] == 1:
             if param == "bexp":
-                idSoil2D.variables['bexp'][:,:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['bexp'][:,:,:,:],idSoil2D.variables['bexp'][:,:,:,:]*float(newParams.bexp[0]))
+                idSoil2D.variables['BEXP'][:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['BEXP'][:,:],idSoil2D.variables['BEXP'][:,:]*float(newParams.bexp[0]))
 
             if param == "smcmax":
-                idSoil2D.variables['smcmax'][:,:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['smcmax'][:,:,:,:],idSoil2D.variables['smcmax'][:,:,:,:]*float(newParams.smcmax[0]))
+                idSoil2D.variables['SMCMAX'][:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['SMCMAX'][:,:],idSoil2D.variables['SMCMAX'][:,:]*float(newParams.smcmax[0]))
 
             if param == "slope":
-                idSoil2D.variables['slope'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['slope'][:,:,:],idSoil2D.variables['slope'][:,:,:]*0+float(newParams.slope[0]))
+                idSoil2D.variables['SLOPE0'][:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['SLOPE0'][:,:],idSoil2D.variables['SLOPE0'][:,:]*0+float(newParams.slope[0]))
 
             if param == "lksatfac":
                 idFullDom.variables['LKSATFAC'][:,:] = np.where(maskFine[0]==1,idFullDom.variables['LKSATFAC'][:,:],idFullDom.variables['LKSATFAC'][:,:]*0+float(newParams.lksatfac[0]))
 
             if param == "cwpvt":
-                idSoil2D.variables['cwpvt'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['cwpvt'][:,:,:],idSoil2D.variables['cwpvt'][:,:,:]*float(newParams.cwpvt[0]))
+                idSoil2D.variables['CWPVT'][:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['CWPVT'][:,:],idSoil2D.variables['CWPVT'][:,:]*float(newParams.cwpvt[0]))
 
             if param == "vcmx25":
-                idSoil2D.variables['vcmx25'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['vcmx25'][:,:,:],idSoil2D.variables['vcmx25'][:,:,:]*float(newParams.vcmx25[0]))
+                idSoil2D.variables['VCMX25'][:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['VCMX25'][:,:],idSoil2D.variables['VCMX25'][:,:]*float(newParams.vcmx25[0]))
 
             if param == "mp":
-                idSoil2D.variables['mp'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['mp'][:,:,:],idSoil2D.variables['mp'][:,:,:]*float(newParams.mp[0]))
+                idSoil2D.variables['MP'][:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['MP'][:,:],idSoil2D.variables['MP'][:,:]*float(newParams.mp[0]))
 
             if param == "hvt":
                 idSoil2D.variables['hvt'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['hvt'][:,:,:],idSoil2D.variables['hvt'][:,:,:]*float(newParams.hvt[0]))
 
             if param == "mfsno":
-                idSoil2D.variables['mfsno'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['mfsno'][:,:,:],idSoil2D.variables['mfsno'][:,:,:]*float(newParams.mfsno[0]))
+                idSoil2D.variables['MFSNO'][:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['MFSNO'][:,:],idSoil2D.variables['MFSNO'][:,:]*float(newParams.mfsno[0]))
 
             if param == "refkdt":
-                idSoil2D.variables['refkdt'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['refkdt'][:,:,:],idSoil2D.variables['refkdt'][:,:,:]*0+float(newParams.refkdt[0]))
+                idSoil2D.variables['REFKDT'][:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['REFKDT'][:,:],idSoil2D.variables['REFKDT'][:,:]*0+float(newParams.refkdt[0]))
 
             if param == "dksat":
-                idSoil2D.variables['dksat'][:,:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['dksat'][:,:,:,:],idSoil2D.variables['dksat'][:,:,:,:]*float(newParams.dksat[0]))
+                idSoil2D.variables['DKSAT'][:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['DKSAT'][:,:],idSoil2D.variables['dksat'][:,:]*float(newParams.dksat[0]))
 
             if param == "retdeprtfac":
                 idFullDom.variables['RETDEPRTFAC'][:,:] = np.where(maskFine[0]==1,idFullDom.variables['RETDEPRTFAC'][:,:],idFullDom.variables['RETDEPRTFAC'][:,:]*0+float(newParams.retdeprtfac[0]))
@@ -423,13 +450,14 @@ def main(argv):
                 idHydroTbl.variables['NEXP'][:,:] = np.where(np.flipud(mask[0])==1,idHydroTbl.variables['NEXP'][:,:],idHydroTbl.variables['NEXP'][:,:]*float(newParams.nexp[0]))
 
             if param == "AXAJ":
-                idSoil2D.variables['AXAJ'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['AXAJ'][:,:,:],idSoil2D.variables['AXAJ'][:,:,:]*float(newParams.AXAJ[0]))
+                idSoil2D.variables['AXAJ'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['AXAJ'][:,:,:],idSoil2D.variables['AXAJ'][:,:,:]*0+float(newParams.AXAJ[0]))
 
             if param == "BXAJ":
-                idSoil2D.variables['BXAJ'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['BXAJ'][:,:,:],idSoil2D.variables['BXAJ'][:,:,:]*float(newParams.BXAJ[0]))
+                idSoil2D.variables['BXAJ'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['BXAJ'][:,:,:],idSoil2D.variables['BXAJ'][:,:,:]*0+float(newParams.BXAJ[0]))
 
             if param == "XXAJ":
-                idSoil2D.variables['XXAJ'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['XXAJ'][:,:,:],idSoil2D.variables['XXAJ'][:,:,:]*float(newParams.XXAJ[0]))
+                idSoil2D.variables['XXAJ'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['XXAJ'][:,:,:],idSoil2D.variables['XXAJ'][:,:,:]*0+float(newParams.XXAJ[0]))
+
 		
             if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:   
                 if param == "zmax":
@@ -450,7 +478,11 @@ def main(argv):
     if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
         idGw.close()
     idHydroTbl.close()
-    
+
+    # ADDED BY TML: Close RouteLink.nc File
+    if args.chRtFlag[0] == 2:
+        idRt.close()   
+
     # Remove restart files. All other files will be overwritten by the next
     # model iteration. 
     cmd = 'rm -rf ' + runDir + '/*.err'
@@ -468,6 +500,13 @@ def main(argv):
         subprocess.call(cmd,shell=True)
     except:
         sys.exit(4)
+
+    cmd = 'rm -rf ' + runDir + '/HYD_OUTPUT/restart_*'
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        sys.exit(4)
+
     cmd = 'rm -rf ' + runDir + '/RESTART.*'
     try:
         subprocess.call(cmd,shell=True)

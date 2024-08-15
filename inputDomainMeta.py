@@ -180,6 +180,7 @@ def main(argv):
         wrfInPath = dirBasin + "/wrfinput.nc"
         forceDir = dirBasin + "/FORCING"
         obsDir = dirBasin + "/OBS/"
+        lisNC  = dirBasin + "/lis_input_nlc.nc"
         optSpinLandFile = dirBasin + "/LandRestartSubstitute.nc"
         optSpinHydroFile = dirBasin + "/HydroRestartSubstitute.nc"
         
@@ -223,6 +224,9 @@ def main(argv):
         if not os.path.isdir(obsDir):
             print("ERROR: " + obsDir + " not found.")
             sys.exit(1)
+        if not os.path.isfile(lisNC):
+            print("ERROR: " + lisNC + " not found.")
+            sys.exit(1)
         if not os.path.isfile(gwMskPath):
             print("WARNING: " + gwMskPath + " not found. Assuming you are running NWM routing....")
             gwMskPath = "-9999"
@@ -250,13 +254,13 @@ def main(argv):
               "gw_file,gw_mask,lake_file,forcing_dir,obs_file,site_name,lat,lon," + \
               "area_sqmi,area_sqkm,county_cd,state,huc2,huc4,huc6,huc8,ecol3,ecol4,rfc," + \
               "dx_hydro,agg_factor,hydro_tbl_spatial,opt_spin_land_path," + \
-              "opt_spin_hydro_path,chan_parm_path) VALUES " + \
-              "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (siteNo,\
+              "opt_spin_hydro_path,chan_parm_path,lis_file) VALUES " + \
+              "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (siteNo,\
               link,dirBasin,agency,geoE,geoW,geoS,geoN,hydE,hydW,\
               hydS,hydN,geoPath,landSpatialMetaPath,wrfInPath,soilPath,fullDomPath,routePath,wghtPath,gwPath,\
               gwMskPath,lakePath,forceDir,obsDir,sName,lat,lon,sqMi,sqKm,\
               county,state,huc2,huc4,huc6,huc8,eco3,eco4,rfc,dxrt,aggFactor,hydro2d,
-              optSpinLandFile,optSpinHydroFile,chanParmPath)
+              optSpinLandFile,optSpinHydroFile,chanParmPath,lisNC)
               
         # Make entry into DB
         try:

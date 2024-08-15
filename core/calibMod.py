@@ -13,11 +13,13 @@ import subprocess
 import time
 import psutil
 import pandas as pd
-import pickle5 as pickle
+#import pickle5 as pickle
 from yaml import SafeDumper
 import yaml
 import warnings
 warnings.filterwarnings("ignore")
+import datetime
+import re
 
 def runTroute(statusData,staticData,db,gageID,gage,gageMeta,basinNum):
 
@@ -1063,7 +1065,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         # Since these are calibration simulations, we are always going to be 
         # starting the model rom an existing RESTART file. startType = 1 is for
         # when we have cold starts. Note 2 indicates we are restarting the model. 
-        startType = 2
+        startType = 3
             
         if startType == 2:
             # Clean run directory of any old diagnostics files
@@ -1086,6 +1088,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         try:
             namelistMod.createHrldasNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,1)
             namelistMod.createHydroNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,1)
+            namelistMod.createLisNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,1)
         except:
             raise
             
@@ -1117,11 +1120,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         # First delete namelist files if they exist.
         check = runDir + "/namelist.hrldas"
         check2 = runDir + "/hydro.namelist"
+        check3 = runDir + "/lis.config"
         if os.path.isfile(check):
             os.remove(check)
         if os.path.isfile(check2):
             os.remove(check2)
-            
+        if os.path.isfile(check3):
+            os.remove(check3)
+
         if staticData.coldStart == 0:
             # Make symbolic links as necssary.
             try:
@@ -1144,6 +1150,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         try:
             namelistMod.createHrldasNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,1)
             namelistMod.createHydroNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,1)
+            namelistMod.createLisNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,1)
         except:
             raise
             
@@ -1674,8 +1681,11 @@ def generateMpiScript(jobData,gageID,basinNum,runDir):
         fileObj.write(inStr)
         inStr = 'for FILE in HYDRO_RST.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
-        inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
+        #inStr = 'find LIS_OUTPUT/SURFACEMODEL -type f -name "LIS_RST_NOAHMP401_*" -exec rm {} +'
+        #fileObj.write(inStr)
+        inStr = 'for FILE in HYD_OUTPUT/restart_*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
+
         if len(jobData.cpuPinCmd) > 0:
             inStr = jobData.mpiCmd + " " + str(jobData.nCoresMod) + " " + jobData.cpuPinCmd + \
                     str(jobData.gageBegModelCpu[basinNum]) + "-" + \
@@ -1848,6 +1858,7 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir,staticData):
         try:
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
+            fileObj.write('module load R/4.3.1\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' ' + \
                           str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' ' + str(staticData.enableMask) +' \n')
@@ -1922,6 +1933,7 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir,staticData):
         try:
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
+            fileObj.write('module load R/4.3.1\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + \
                           runDir + ' ' + str(staticData.gwBaseFlag) + ' ' + \
@@ -1997,6 +2009,7 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir,staticData):
         try:
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
+            fileObj.write('module load R/4.3.1\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + \
                           ' ' + runDir + ' ' + str(staticData.gwBaseFlag) + ' ' + \
@@ -2031,6 +2044,7 @@ def generateMpiCalibScript(jobData,gageID,basinNum,runDir,workDir,staticData):
         try:
             fileObj = open(outFile1,'w')
             fileObj.write('#!/bin/bash\n')
+            fileObj.write('module load R/4.3.1\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
             if len(jobData.cpuPinCmd) > 0:
@@ -2066,6 +2080,7 @@ def generateMpiCalibScript(jobData,gageID,basinNum,runDir,workDir,staticData):
         try:
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
+            fileObj.write('module load R/4.3.1\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + \
                           ' ' + runDir + ' ' + str(staticData.gwBaseFlag) + ' ' + \
@@ -2100,19 +2115,28 @@ def linkToRst(statusData,gage,runDir,gageMeta,staticData):
     iteration simulation. If the user has specified a custom restart file, or 
     to optionally cold start the model through calibration, accomodate here. 
     """
-    link1 = runDir + "/RESTART." + statusData.bCalibDate.strftime('%Y%m%d') + "00_DOMAIN1"
+    #link1 = runDir + "/RESTART." + statusData.bCalibDate.strftime('%Y%m%d') + "00_DOMAIN1"
+    lCurrent = statusData.bCalibDate - datetime.timedelta(days=1)
+    link1 = runDir + "/LIS_RST_NOAHMP401_" + lCurrent.strftime('%Y%m%d') + "2300.d01.nc"
     link2 = runDir + "/HYDRO_RST." + statusData.bCalibDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+    destDir = runDir + "/HYD_INPUT"
 
     if staticData.optSpinFlag == 0: 
         # Check to make sure symbolic link to spinup state exists.
-        check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
+        #check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
+        lCurrent = statusData.eSpinDate - datetime.timedelta(days=1)
+        check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/LIS_OUTPUT/SURFACEMODEL/" + lCurrent.strftime('%Y%m') + "/LIS_RST_NOAHMP401_" + lCurrent.strftime('%Y%m%d') + "2300.d01.nc"
         check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
-        
+        sourceDir = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/HYD_OUTPUT"
+
         if not os.path.isfile(check1):
             statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
             raise Exception()
         if not os.path.isfile(check2):
             statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
+            raise Exception()
+        if not os.path.exists(sourceDir):
+            statusData.errMsg = "ERROR: Spinup state: " + sourceDir + " not found."
             raise Exception()
         
         # Create links if they don't exist
@@ -2120,6 +2144,21 @@ def linkToRst(statusData,gage,runDir,gageMeta,staticData):
             os.symlink(check1,link1)
         if not os.path.islink(link2):
             os.symlink(check2,link2)
+        if not os.path.exists(destDir):
+            os.makedirs(destDir)
+
+            dateStr = statusData.bCalibDate.strftime('%Y-%m-%dT00:00:00')
+            files = os.listdir(sourceDir)
+            date_pattern = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}')
+
+            for file in files:
+                match = date_pattern.search(file)
+                if match:
+                    # Replace the date string in the file name with the date variable
+                    new_file_name = date_pattern.sub(dateStr, file)
+                    # Create symbolic link
+                    os.symlink(os.path.join(sourceDir, file), os.path.join(destDir, new_file_name))
+
     elif staticData.optSpinFlag != 1:
         # Check to see if file exists, then create symbolic link to it. 
         if gageMeta.optLandRstFile == "-9999":
@@ -2137,8 +2176,8 @@ def linkToRst(statusData,gage,runDir,gageMeta,staticData):
             statusData.errMsg = "ERROR: Spinup state: " + gageMeta.optHydroRstFile + " not found."
             raise Exception()
         # Create links if they don't exist
-        if not os.path.islink(link1):
-            os.symlink(gageMeta.optLandRstFile,link1)
+        #if not os.path.islink(link1):
+        #    os.symlink(gageMeta.optLandRstFile,link1)
         if not os.path.islink(link2):
             os.symlink(gageMeta.optHydroRstFile,link2)
 

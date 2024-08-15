@@ -38,20 +38,23 @@ class gageMeta:
         self.optLandRstFile = []
         self.optHydroRstFile = []
         self.chanParmFile = []
+        self.lisNC = []
+
     def pullGageMeta(self,jobData,db,gageName,domainID):
         # Function to extract locations of gage-specific spatial files.
-        
+       
+        print(gageName)
         tmpMeta = {'gageName':gageName,'geoFile':'','landSpatialMeta':'','fullDomFile':'',\
                    'rtLnk':'','lkFile':'','gwFile':'','udMap':'',\
                    'wrfInput':'','soilFile':'','hydroSpatial':'','forceDir':'',\
                    'obsDir':'','siteName':'','gageID':'','comID':'','nCoresMod':'','dxHydro':'',\
                    'aggFactor':'','domainID':domainID,'optLandRstFile':'',\
-                   'optHydroRstFile':'','chanParmFile':''}
+                   'optHydroRstFile':'','chanParmFile':'', 'lisNC':''}
         try:
             db.queryGageMeta(jobData,tmpMeta)
         except:
             raise
-            
+        print(tmpMeta)    
         self.gage = tmpMeta['gageName']
         self.gageID = tmpMeta['gageID']
         self.geoFile = tmpMeta['geoFile']
@@ -74,6 +77,7 @@ class gageMeta:
         self.optLandRstFile = tmpMeta['optLandRstFile']
         self.optHydroRstFile = tmpMeta['optHydroRstFile']
         self.chanParmFile = tmpMeta['chanParmFile']
+        self.lisNC = tmpMeta['lisNC']
         
 def getGageList(jobData,db):
     # Function for extracting list of gages 
@@ -134,6 +138,7 @@ def copyDefaultParms(jobData,runDir,gage,staticData):
         except:
             jobData.errMsg = "ERROR: Failure to copy: " + inPath + " to: " + outPath
             raise
+   
     
     inPath = runDir + "/HYDRO_TBL_2D.nc"
     outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/HYDRO_TBL_2D.nc"
@@ -146,8 +151,11 @@ def copyDefaultParms(jobData,runDir,gage,staticData):
         jobData.errMsg = "ERROR: Failure to copy: " + inPath + " to: " + outPath
         raise
     
-    inPath = runDir + "/soil_properties.nc"
-    outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/soil_properties.nc"
+    #inPath = runDir + "/soil_properties.nc"
+    #outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/soil_properties.nc"
+
+    inPath = runDir + "/lis.nc"
+    outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/lis.nc"
     if not os.path.isfile(inPath):
         jobData.errMsg = "ERROR: Expected to find: " + inPath + " but was not found."
         raise Exception()
@@ -156,7 +164,22 @@ def copyDefaultParms(jobData,runDir,gage,staticData):
     except:
         jobData.errMsg = "ERROR: Failure to copy: " + inPath + " to: " + outPath
         raise
-        
+    
+    # ADDED BY TML: Copy RouteLink.nc File to DEFAULT_PARAMETER directory
+    if staticData.chnRtOpt == 2:
+        # Copy the RouteLink.nc file.
+        inPath = runDir + "/RouteLink.nc"
+        outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/RouteLink.nc"
+        if not os.path.isfile(inPath):
+            jobData.errMsg = "ERROR: Expected to find: " + inPath + " but was not found."
+            raise Exception()
+        try:
+            shutil.copy(inPath,outPath)
+        except:
+            jobData.errMsg = "ERROR: Failure to copy: " + inPath + " to: " + outPath
+            raise
+    # END TML CHANGE
+
     if staticData.chnRtOpt == 3:
         # Copy the CHANPARM file.
         inPath = runDir + "/CHANPARM.TBL"
@@ -262,6 +285,15 @@ def setupModels(jobData,db,args,libPathTop):
                 jobData.errMsg = "ERROR: Failure to create directory: " + outDir
                 raise
             
+            # TML: Another addition to back up parameters, in case of crash...
+            bakDir = gageDir + "/RUN.CALIB/OUTPUT/netcdf.bak"
+            try:
+                os.mkdir(bakDir)
+            except:
+                wipeJobDir(jobData)
+                jobData.errMsg = "ERROR: Failure to create directory: " + bakDir
+                raise
+
             validDir = gageDir + "/RUN.VALID"
             try:
                 os.mkdir(validDir)
@@ -392,7 +424,7 @@ def setupModels(jobData,db,args,libPathTop):
             for i in range(0,jobData.nSensIter):
                 link1 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/WHS" + \
                         str(jobData.jobID) + str(jobData.gageIDs[gage]) + str(i)
-                link2 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/wrf_hydro.exe"
+                link2 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/NLC.exe"
                 try:
                     os.symlink(str(jobData.exe),link1)
                 except:
@@ -404,10 +436,10 @@ def setupModels(jobData,db,args,libPathTop):
                     jobData.errMsg = "ERROR: Unable to link WRF-Hydro executable to: " + link2
                     raise
             
-        link1 = gageDir + "/RUN.SPINUP/OUTPUT/wrf_hydro.exe"
-        link2 = gageDir + "/RUN.CALIB/OUTPUT/wrf_hydro.exe"
-        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/wrf_hydro.exe"
-        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/wrf_hydro.exe"
+        link1 = gageDir + "/RUN.SPINUP/OUTPUT/NLC.exe"
+        link2 = gageDir + "/RUN.CALIB/OUTPUT/NLC.exe"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/NLC.exe"
+        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/NLC.exe"
         try:
             os.symlink(str(jobData.exe),link1)
             if jobData.calibFlag == 1:
@@ -481,7 +513,38 @@ def setupModels(jobData,db,args,libPathTop):
             errMod.wipeJobDir(jobData,db)
             jobData.errMsg = "ERROR: Unable to create symbolic link to soil parameter table."
             raise
-            
+
+        link1 = gageDir + "/RUN.SPINUP/OUTPUT/forcing_variables.txt"
+        link2 = gageDir + "/RUN.CALIB/OUTPUT/forcing_variables.txt"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/forcing_variables.txt"
+        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/forcing_variables.txt"
+        try:
+            os.symlink(str(jobData.forcingVarTbl),link1)
+            if jobData.calibFlag == 1:
+                os.symlink(str(jobData.forcingVarTbl),link2)
+                os.symlink(str(jobData.forcingVarTbl),link3)
+                os.symlink(str(jobData.forcingVarTbl),link4)
+        except:
+            errMod.wipeJobDir(jobData,db)
+            jobData.errMsg = "ERROR: Unable to create symbolic link to forcing var table."
+            raise
+
+        link1 = gageDir + "/RUN.SPINUP/OUTPUT/NOAHMP_OUTPUT_LIST.LSM.TBL"
+        link2 = gageDir + "/RUN.CALIB/OUTPUT/NOAHMP_OUTPUT_LIST.LSM.TBL"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/NOAHMP_OUTPUT_LIST.LSM.TBL"
+        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/NOAHMP_OUTPUT_LIST.LSM.TBL"
+        try:
+            os.symlink(str(jobData.noahMPLSMTbl),link1)
+            if jobData.calibFlag == 1:
+                os.symlink(str(jobData.noahMPLSMTbl),link2)
+                os.symlink(str(jobData.noahMPLSMTbl),link3)
+                os.symlink(str(jobData.noahMPLSMTbl),link4)
+        except:
+            errMod.wipeJobDir(jobData,db)
+            jobData.errMsg = "ERROR: Unable to create symbolic link to NOAHMP LSM table."
+            raise
+
+
         if jobData.sensFlag == 1:
             for i in range(0,jobData.nSensIter):
                 link1 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/SOILPARM.TBL"
@@ -540,7 +603,7 @@ def setupModels(jobData,db,args,libPathTop):
                   except:
                       jobData.errMsg = "ERROR: Unable to create symbolic link to: " + link1
                       raise
-        
+
         # Extract gage-specific information (geogrid file, fulldom file, etc)
         # from metadata DB.
         try:
@@ -548,7 +611,24 @@ def setupModels(jobData,db,args,libPathTop):
         except:
             errMod.wipeJobDir(jobData,db)
             raise
-            
+        
+        link1 = gageDir + "/RUN.SPINUP/OUTPUT/lis.nc"
+        link2 = gageDir + "/RUN.CALIB/OUTPUT/lis.nc"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/lis.nc"
+        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/lis.nc"
+        try:
+            print(str(gageData.lisNC))
+            os.symlink(str(gageData.lisNC),link1)
+            os.symlink(str(gageData.lisNC),link2)
+            os.symlink(str(gageData.lisNC),link3)
+            os.symlink(str(gageData.lisNC),link4)
+        except Exception as e:
+            print(str(e))
+            errMod.wipeJobDir(jobData,db)
+            jobData.errMsg = "ERROR: Unable to create symbolic link for lis nc file."
+            raise
+
+
         # Make a copy of the CHANPARM table file (if gridded routing) for spinup
         # purposes.
         if gageData.chanParmFile != "-9999":
@@ -572,8 +652,10 @@ def setupModels(jobData,db,args,libPathTop):
                 jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
                 raise
             
-            origPath = str(gageData.soilFile)
-            newPath = baseParmDir + "/soil_properties.nc"
+            #origPath = str(gageData.soilFile)
+            #newPath = baseParmDir + "/soil_properties.nc"
+            origPath = str(gageData.lisNC)
+            newPath = baseParmDir + "/lis.nc"
             try:
                 shutil.copy(origPath,newPath)
             except:
@@ -599,7 +681,18 @@ def setupModels(jobData,db,args,libPathTop):
                     errMod.wipeJobDir(jobData,db)
                     jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
                     raise
-            
+            # ADDED BY TML: Add RouteLink file to baseline parameter directory           
+            origPath = str(gageData.rtLnk)
+            newPath = baseParmDir + "/RouteLink.nc"
+            if str(gageData.rtLnk) != "-9999":
+                try:
+                    shutil.copy(origPath,newPath)
+                except:
+                    errMod.wipeJobDir(jobData,db)
+                    jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
+                    raise 
+            # END TML CHANGE
+
             if jobData.gwBaseFlag == 1 or jobData.gwBaseFlag == 4:
                 origPath = str(gageData.gwFile)
                 newPath = baseParmDir + "/GWBUCKPARM.nc"
@@ -886,6 +979,64 @@ def generateCalibGroupScript(jobData,groupNum,scriptPath,topDir):
             jobData.errMsg = "ERROR: Failure to convert: " + scriptPath + " to an executable."
             raise
 
+    if jobData.jobRunType == 5:
+        try:
+            # We are running Slurm
+            fileObj = open(scriptPath, 'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('#\n')
+            fileObj.write('# Slurm Batch Script to Run LIS WRF-Hydro Group Calibrations\n')
+            fileObj.write('#\n')
+            inStr = "#SBATCH --job-name=WCG_" + str(jobData.jobID) + "_" + str(groupNum) + '\n'
+            fileObj.write(inStr)
+            if len(jobData.acctKey.strip()) > 0:
+                inStr = "#SBATCH --account=" + str(jobData.acctKey) + '\n'
+                fileObj.write(inStr)
+            inStr = "#SBATCH --time=12:00:00\n"
+            fileObj.write(inStr)
+            if len(jobData.queName.strip()) > 0:
+                inStr = "#SBATCH --partition=" + str(jobData.queName) + "\n"
+                fileObj.write(inStr)
+            inStr = "#SBATCH --output=" + jobData.jobDir + "/WCG_" + str(jobData.jobID) + "_" + \
+                    str(groupNum) + ".out\n"
+            fileObj.write(inStr)
+            inStr = "#SBATCH -e " + jobData.jobDir + "/WCG_" + str(jobData.jobID) + "_" + \
+                        str(groupNum) + ".err\n"
+            fileObj.write(inStr)
+            inStr = "#SBATCH -N " + str(jobData.nNodesMod) + '\n'
+            fileObj.write(inStr)
+            inStr = "#SBATCH -n " + str(jobData.nCoresMod) + "\n"
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            inStr = "#SBATCH --constraint=mil"
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            inStr = "#SBATCH --qos=allnccs"
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            inStr = 'export NLC_DIR="/discover/nobackup/projects/lis-ndmc/tlahmers/LIS_WRF-Hydro_Run"'
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            inStr = "source $NLC_DIR/env/discover.intel.23.2.1" 
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            fileObj.write("umask 022\n")
+            fileObj.write("ulimit -t unlimited\n")
+            fileObj.write("ulimit -f unlimited\n")
+            fileObj.write("ulimit -d unlimited\n")
+            fileObj.write("ulimit -s unlimited\n")
+
+            fileObj.write('cd ' + topDir + '\n')
+            for m in jobData.moduleLoadStr:
+                fileObj.write(m)
+                fileObj.write("\n")
+            inStr = "python calib.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
+            fileObj.write(inStr)
+            fileObj.close()
+        except:
+            jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
+            raise
+
 def generateSpinupGroupScript(jobData,groupNum,scriptPath,topDir):
     """
     Function to generate the run script for a particular group of basins.
@@ -997,6 +1148,66 @@ def generateSpinupGroupScript(jobData,groupNum,scriptPath,topDir):
             jobData.errMsg = "ERROR: Failure to convert: " + scriptPath + " to an executable."
             raise
 
+    if jobData.jobRunType == 5:
+        try:
+            # We are running Slurm
+            fileObj = open(scriptPath, 'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('#\n')
+            fileObj.write('# Slurm Batch Script to Run LIS WRF-Hydro Group Spinups\n')
+            fileObj.write('#\n')
+            inStr = "#SBATCH --job-name=WSG_" + str(jobData.jobID) + "_" + str(groupNum) + '\n'
+            fileObj.write(inStr)
+            if len(jobData.acctKey.strip()) > 0:
+                inStr = "#SBATCH --account=" + str(jobData.acctKey) + '\n'
+                fileObj.write(inStr)
+            inStr = "#SBATCH --time=12:00:00\n"
+            fileObj.write(inStr)
+            if len(jobData.queName.strip()) > 0:
+                inStr = "#SBATCH --partition=" + str(jobData.queName) + "\n"
+                fileObj.write(inStr)
+            inStr = "#SBATCH --output=" + jobData.jobDir + "/WSG_" + str(jobData.jobID) + "_" + \
+                    str(groupNum) + ".out\n"
+            fileObj.write(inStr)
+            inStr = "#SBATCH -e " + jobData.jobDir + "/WSG_" + str(jobData.jobID) + "_" + \
+                        str(groupNum) + ".err\n"
+            fileObj.write(inStr)
+            inStr = "#SBATCH -N " + str(jobData.nNodesMod) + '\n'
+            #inStr = "slloc -N" + str(jobData.nNodesMod) + " --constraint=mil --qos=debug\n"
+            fileObj.write(inStr)
+            inStr = "#SBATCH -n " + str(jobData.nCoresPerNode) + "\n"
+            fileObj.write(inStr)
+            #fileObj.write("\n")
+            inStr = "#SBATCH --constraint=mil"
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            inStr = "#SBATCH --qos=allnccs"
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            inStr = 'export NLC_DIR="/discover/nobackup/projects/lis-ndmc/tlahmers/LIS_WRF-Hydro_Run"'
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            inStr = "source $NLC_DIR/env/discover.intel.23.2.1"
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            fileObj.write("umask 022\n")
+            fileObj.write("ulimit -t unlimited\n")
+            fileObj.write("ulimit -f unlimited\n")
+            fileObj.write("ulimit -d unlimited\n")
+            fileObj.write("ulimit -s unlimited\n")
+            #fileObj.write("ml comp/intel/2021.4.0\n")
+            fileObj.write('cd ' + topDir + '\n')
+            for m in jobData.moduleLoadStr:
+                fileObj.write(m)
+                fileObj.write("\n")
+            inStr = "python spinup.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
+            fileObj.write(inStr)
+            fileObj.close()
+        except:
+            jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
+            raise
+
+
 def generateValidGroupScript(jobData,groupNum,scriptPath,valid_type,topDir):
     """
     Function to generate the run script for a particular group of basins.
@@ -1107,3 +1318,63 @@ def generateValidGroupScript(jobData,groupNum,scriptPath,valid_type,topDir):
         except:
             jobData.errMsg = "ERROR: Failure to convert: " + scriptPath + " to an executable."
             raise
+
+    if jobData.jobRunType == 5:
+        try:
+            # We are running Slurm
+            fileObj = open(scriptPath, 'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('#\n')
+            fileObj.write('# Slurm Batch Script to Run LIS WRF-Hydro Group Validations\n')
+            fileObj.write('#\n')
+            inStr = "#SBATCH --job-name=WVG_" + str(jobData.jobID) + "_" + str(groupNum) + '\n'
+            fileObj.write(inStr)
+            if len(jobData.acctKey.strip()) > 0:
+                inStr = "#SBATCH --account=" + str(jobData.acctKey) + '\n'
+                fileObj.write(inStr)
+            inStr = "#SBATCH --time=03:00:00\n"
+            fileObj.write(inStr)
+            if len(jobData.queName.strip()) > 0:
+                inStr = "#SBATCH --partition=" + str(jobData.queName) + "\n"
+                fileObj.write(inStr)
+            inStr = "#SBATCH --output=" + jobData.jobDir + "/WVG_" + str(jobData.jobID) + "_" + \
+                    str(groupNum) + ".out\n"
+            fileObj.write(inStr)
+            inStr = "#SBATCH -e " + jobData.jobDir + "/WVG_" + str(jobData.jobID) + "_" + \
+                        str(groupNum) + ".err\n"
+            fileObj.write(inStr)
+            #inStr = "#SBATCH -N " + str(jobData.nNodesMod) + '\n'
+            inStr = "slloc -N" + str(jobData.nNodesMod) + " --constraint=mil --qos=debug"
+            fileObj.write(inStr)
+            inStr = "#SBATCH -n " + str(jobData.nCoresMod) + "\n"
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            inStr = "#SBATCH --constraint=mil"
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            inStr = "#SBATCH --qos=allnccs"
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            inStr = 'export NLC_DIR="/discover/nobackup/projects/lis-ndmc/tlahmers/LIS_WRF-Hydro_Run"'
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            inStr = "source $NLC_DIR/env/discover.intel.23.2.1"             
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            fileObj.write("umask 022\n")
+            fileObj.write("ulimit -t unlimited\n")
+            fileObj.write("ulimit -f unlimited\n")
+            fileObj.write("ulimit -d unlimited\n")
+            fileObj.write("ulimit -s unlimited\n")
+            fileObj.write("ml comp/intel/2021.4.0\n")
+            fileObj.write('cd ' + topDir + '\n')
+            for m in jobData.moduleLoadStr:
+                fileObj.write(m)
+                fileObj.write("\n")
+            inStr = "python validation.py " + str(jobData.jobID) + " " + str(groupNum) + " " + str(valid_type) + " --optDbPath " + jobData.dbPath + "\n"
+            fileObj.write(inStr)
+            fileObj.close()
+        except:
+            jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
+            raise
+

@@ -114,6 +114,9 @@ def main(argv):
     jobData.moduleLoadStr = staticData.moduleLoadStr
     jobData.moduleLoadTrouteStr = staticData.moduleLoadTrouteStr
     jobData.trouteCompleteBasin = 0
+    jobData.lisConfig = staticData.lis_config_file
+    jobData.nlcConfig = staticData.nlc_config_file
+
     # Check gages in directory to match what's in the database
     try:
         jobData.checkGages2(db)

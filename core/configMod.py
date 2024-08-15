@@ -76,6 +76,8 @@ class jobMeta:
         self.urbParmTbl = []
         self.vegParmTbl = []
         self.soilParmTbl = []
+        self.forcingVarTbl = []
+        self.noahMPLSMTbl = []
         self.bSpinDate = []
         self.eSpinDate = []
         self.bCalibDate = []
@@ -164,6 +166,67 @@ class jobMeta:
         #self.maskFile = []
         self.enableMultiSites = []
         self.output_channelBucket_influx = []
+        self.surface_model_output_interval = []
+        self.land_surface_model = []
+        self.number_of_met_forcing_sources = []
+        self.blending_method_for_forcings = []
+        self.met_forcing_sources = []
+        self.topographic_correction_method_met_forcing = []
+        self.forcing_variables_list_file = []
+        self.output_forcing = []
+        self.output_parameters = []
+        self.output_model_restart_files = []
+        self.output_methodology = []
+        self.output_data_format = []
+        self.output_naming_style = []
+        self.undefined_value = []
+        self.diagnostic_output_file = []
+        self.number_of_ensembles_per_tile = []
+        self.number_of_processors_along_x = []
+        self.number_of_processors_along_y = []
+        self.halo_size_along_x = []
+        self.halo_size_along_y = []
+        self.noah_mp_4_0_1_model_timestep = []
+        self.noah_mp_4_0_1_restart_output_interval = []
+        self.noah_mp_4_0_1_restart_file = []
+        self.noah_mp_4_0_1_restart_file_format = []
+        self.noah_mp_4_0_1_soil_parameter_table = []
+        self.noah_mp_4_0_1_general_parameter_table = []
+        self.noah_mp_4_0_1_mp_parameter_table = []
+        self.noah_mp_4_0_1_number_of_soil_layers = []
+        self.noah_mp_4_0_1_thickness_of_soil_layers = []
+        self.noah_mp_4_0_1_dynamic_vegetation_option = []
+        self.noah_mp_4_0_1_canopy_stomatal_resistance_option = []
+        self.noah_mp_4_0_1_soil_moisture_factor_for_stomatal_resistance = []
+        self.noah_mp_4_0_1_runoff_and_groundwater_option = []
+        self.noah_mp_4_0_1_surface_layer_drag_coefficient_option = []
+        self.noah_mp_4_0_1_supercooled_liquid_water_option = []
+        self.noah_mp_4_0_1_frozen_soil_permeability_option = []
+        self.noah_mp_4_0_1_radiation_transfer_option = []
+        self.noah_mp_4_0_1_snow_surface_albedo_option = []
+        self.noah_mp_4_0_1_rainfall_and_snowfall_option = []
+        self.noah_mp_4_0_1_lower_boundary_of_soil_temperature_option = []
+        self.noah_mp_4_0_1_snow_and_soil_temperature_time_scheme_option = []
+        self.noah_mp_4_0_1_glacier_option = []
+        self.noah_mp_4_0_1_surface_resistance_option = []
+        self.noah_mp_4_0_1_soil_configuration_option = []
+        self.noah_mp_4_0_1_soil_pedotransfer_function_option = []
+        self.noah_mp_4_0_1_crop_model_option = []
+        self.noah_mp_4_0_1_urban_physics_option = []
+        self.noah_mp_4_0_1_initial_surface_skin_temperature = []
+        self.noah_mp_4_0_1_initial_soil_temperatures = []
+        self.noah_mp_4_0_1_initial_total_soil_moistures = []
+        self.noah_mp_4_0_1_initial_snow_depth = []
+        self.noah_mp_4_0_1_initial_snow_water_equivalent = []
+        self.noah_mp_4_0_1_initial_total_canopy_surface_water = []
+        self.noah_mp_4_0_1_initial_water_table_depth = []
+        self.noah_mp_4_0_1_initial_water_in_the_aquifer = []
+        self.noah_mp_4_0_1_initial_water_in_aquifer_and_saturated_soil = []
+        self.noah_mp_4_0_1_initial_leaf_area_index = []
+        self.noah_mp_4_0_1_reference_height_of_temperature_and_humidity = []
+        self.template_open_water_timestep = []
+        self.lis_config_file = []
+        self.nlc_config_file = []
 
     def checkGages2(self,db):
         #Function to extract domain ID values based on the SQL command placed into the
@@ -298,6 +361,8 @@ class jobMeta:
         self.urbParmTbl = str(parser.get('logistics','urbParmTbl'))
         self.vegParmTbl = str(parser.get('logistics','vegParmTbl'))
         self.soilParmTbl = str(parser.get('logistics','soilParmTbl'))
+        self.forcingVarTbl = str(parser.get('logistics','forcingVarTbl'))
+        self.noahMPLSMTbl = str(parser.get('logistics','noahMPLSMTbl'))
         self.bSpinDate = parser.get('logistics','bSpinDate')
         self.bSpinDate = datetime.datetime.strptime(self.bSpinDate,'%Y-%m-%d')
         self.eSpinDate = parser.get('logistics','eSpinDate')
@@ -398,6 +463,67 @@ class jobMeta:
         self.cmpdChan = int(parser.get('hydroPhysics','compoundChannel'))
         self.enableGwLoss = int(parser.get('hydroPhysics','enableGwBucketLoss'))
         self.gwLoss = int(parser.get('hydroPhysics','bucket_loss'))
+        self.surface_model_output_interval = parser.get('lis', 'surface_model_output_interval')
+        self.land_surface_model = parser.get('lis', 'land_surface_model')
+        self.number_of_met_forcing_sources = parser.get('lis', 'number_of_met_forcing_sources')
+        self.blending_method_for_forcings = parser.get('lis', 'blending_method_for_forcings')
+        self.met_forcing_sources = parser.get('lis', 'met_forcing_sources')
+        self.topographic_correction_method_met_forcing = parser.get('lis', 'topographic_correction_method_(met_forcing)')
+        self.forcing_variables_list_file = parser.get('lis', 'forcing_variables_list_file')
+        self.output_forcing = int(parser.get('lis', 'output_forcing'))
+        self.output_parameters = int(parser.get('lis', 'output_parameters'))
+        self.output_model_restart_files = int(parser.get('lis', 'output_model_restart_files'))
+        self.output_methodology = parser.get('lis', 'output_methodology')
+        self.output_data_format = parser.get('lis', 'output_data_format')
+        self.output_naming_style = parser.get('lis', 'output_naming_style')
+        self.undefined_value = parser.get('lis', 'undefined_value')
+        self.diagnostic_output_file = parser.get('lis', 'diagnostic_output_file')
+        self.number_of_ensembles_per_tile = int(parser.get('lis', 'number_of_ensembles_per_tile'))
+        self.number_of_processors_along_x = int(parser.get('lis', 'number_of_processors_along_x'))
+        self.number_of_processors_along_y = int(parser.get('lis', 'number_of_processors_along_y'))
+        self.halo_size_along_x = int(parser.get('lis', 'halo_size_along_x'))
+        self.halo_size_along_y = int(parser.get('lis', 'halo_size_along_y'))
+        self.noah_mp_4_0_1_model_timestep = parser.get('lis', 'noah-mp.4.0.1_model_timestep')
+        self.noah_mp_4_0_1_restart_output_interval = parser.get('lis', 'noah-mp.4.0.1_restart_output_interval')
+        self.noah_mp_4_0_1_restart_file = parser.get('lis', 'noah-mp.4.0.1_restart_file')
+        self.noah_mp_4_0_1_restart_file_format = parser.get('lis', 'noah-mp.4.0.1_restart_file_format')
+        self.noah_mp_4_0_1_soil_parameter_table = parser.get('lis', 'noah-mp.4.0.1_soil_parameter_table')
+        self.noah_mp_4_0_1_general_parameter_table = parser.get('lis', 'noah-mp.4.0.1_general_parameter_table')
+        self.noah_mp_4_0_1_mp_parameter_table = parser.get('lis', 'noah-mp.4.0.1_mp_parameter_table')
+        self.noah_mp_4_0_1_number_of_soil_layers = int(parser.get('lis', 'noah-mp.4.0.1_number_of_soil_layers'))
+        self.noah_mp_4_0_1_thickness_of_soil_layers = parser.get('lis', 'noah-mp.4.0.1_thickness_of_soil_layers')
+        self.noah_mp_4_0_1_dynamic_vegetation_option = int(parser.get('lis', 'noah-mp.4.0.1_dynamic_vegetation_option'))
+        self.noah_mp_4_0_1_canopy_stomatal_resistance_option = int(parser.get('lis', 'noah-mp.4.0.1_canopy_stomatal_resistance_option'))
+        self.noah_mp_4_0_1_soil_moisture_factor_for_stomatal_resistance = int(parser.get('lis', 'noah-mp.4.0.1_soil_moisture_factor_for_stomatal_resistance'))
+        self.noah_mp_4_0_1_runoff_and_groundwater_option = int(parser.get('lis', 'noah-mp.4.0.1_runoff_and_groundwater_option'))
+        self.noah_mp_4_0_1_surface_layer_drag_coefficient_option = int(parser.get('lis', 'noah-mp.4.0.1_surface_layer_drag_coefficient_option'))
+        self.noah_mp_4_0_1_supercooled_liquid_water_option = int(parser.get('lis', 'noah-mp.4.0.1_supercooled_liquid_water_option'))
+        self.noah_mp_4_0_1_frozen_soil_permeability_option = int(parser.get('lis', 'noah-mp.4.0.1_frozen_soil_permeability_option'))
+        self.noah_mp_4_0_1_radiation_transfer_option = int(parser.get('lis', 'noah-mp.4.0.1_radiation_transfer_option'))
+        self.noah_mp_4_0_1_snow_surface_albedo_option = int(parser.get('lis', 'noah-mp.4.0.1_snow_surface_albedo_option'))
+        self.noah_mp_4_0_1_rainfall_and_snowfall_option = int(parser.get('lis', 'noah-mp.4.0.1_rainfall_&_snowfall_option'))
+        self.noah_mp_4_0_1_lower_boundary_of_soil_temperature_option = int(parser.get('lis', 'noah-mp.4.0.1_lower_boundary_of_soil_temperature_option'))
+        self.noah_mp_4_0_1_snow_and_soil_temperature_time_scheme_option = int(parser.get('lis', 'noah-mp.4.0.1_snow&soil_temperature_time_scheme_option'))
+        self.noah_mp_4_0_1_glacier_option = int(parser.get('lis', 'noah-mp.4.0.1_glacier_option'))
+        self.noah_mp_4_0_1_surface_resistance_option = int(parser.get('lis', 'noah-mp.4.0.1_surface_resistance_option'))
+        self.noah_mp_4_0_1_soil_configuration_option = int(parser.get('lis', 'noah-mp.4.0.1_soil_configuration_option'))
+        self.noah_mp_4_0_1_soil_pedotransfer_function_option = int(parser.get('lis', 'noah-mp.4.0.1_soil_pedotransfer_function_option'))
+        self.noah_mp_4_0_1_crop_model_option = int(parser.get('lis', 'noah-mp.4.0.1_crop_model_option'))
+        self.noah_mp_4_0_1_urban_physics_option = int(parser.get('lis', 'noah-mp.4.0.1_urban_physics_option'))
+        self.noah_mp_4_0_1_initial_surface_skin_temperature = float(parser.get('lis', 'noah-mp.4.0.1_initial_surface_skin_temperature'))
+        self.noah_mp_4_0_1_initial_soil_temperatures = parser.get('lis', 'noah-mp.4.0.1_initial_soil_temperatures')
+        self.noah_mp_4_0_1_initial_total_soil_moistures = parser.get('lis', 'noah-mp.4.0.1_initial_total_soil_moistures')
+        self.noah_mp_4_0_1_initial_snow_depth = float(parser.get('lis', 'noah-mp.4.0.1_initial_snow_depth'))
+        self.noah_mp_4_0_1_initial_snow_water_equivalent = float(parser.get('lis', 'noah-mp.4.0.1_initial_snow_water_equivalent'))
+        self.noah_mp_4_0_1_initial_total_canopy_surface_water = float(parser.get('lis', 'noah-mp.4.0.1_initial_total_canopy_surface_water'))
+        self.noah_mp_4_0_1_initial_water_table_depth = float(parser.get('lis', 'noah-mp.4.0.1_initial_water_table_depth'))
+        self.noah_mp_4_0_1_initial_water_in_the_aquifer = float(parser.get('lis', 'noah-mp.4.0.1_initial_water_in_the_aquifer'))
+        self.noah_mp_4_0_1_initial_water_in_aquifer_and_saturated_soil = float(parser.get('lis', 'noah-mp.4.0.1_initial_water_in_aquifer_and_saturated_soil'))
+        self.noah_mp_4_0_1_initial_leaf_area_index = float(parser.get('lis', 'noah-mp.4.0.1_initial_leaf_area_index'))
+        self.noah_mp_4_0_1_reference_height_of_temperature_and_humidity = float(parser.get('lis', 'noah-mp.4.0.1_reference_height_of_temperature_and_humidity'))
+        self.template_open_water_timestep = parser.get('lis', 'template_open_water_timestep')
+        self.lis_config_file = parser.get('lis', 'lis_config_file')
+        self.nlc_config_file = parser.get('lis', 'nlc_config_file') 
 
 def readConfig(configFile):
     """
@@ -448,7 +574,8 @@ def createJob(argsUser):
     # Read in value
     try:
         jobMeta.readConfig(jobObj,parser)
-    except:
+    except Exception as e:
+        print(str(e))
         print("ERROR: Unable to assign values from config file.")
         raise
         
@@ -694,6 +821,22 @@ def checkConfig(parser):
     check = str(parser.get('logistics','mpParmTbl'))
     if len(check) == 0:
         print("ERROR: Zero length MP parameter table provided.")
+        raise Exception()
+    if not os.path.isfile(check):
+        print("ERROR: File: " + check + " not found.")
+        raise Exception()
+
+    check = str(parser.get('logistics','forcingVarTbl'))
+    if len(check) == 0:
+        print("ERROR: Zero length forcing table provided.")
+        raise Exception()
+    if not os.path.isfile(check):
+        print("ERROR: File: " + check + " not found.")
+        raise Exception()
+
+    check = str(parser.get('logistics','noahMPLSMTbl'))
+    if len(check) == 0:
+        print("ERROR: Zero length noah MP Output LSM table provided.")
         raise Exception()
     if not os.path.isfile(check):
         print("ERROR: File: " + check + " not found.")

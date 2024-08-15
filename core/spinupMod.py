@@ -118,6 +118,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
     """
     runDir = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT"
     workDir = statusData.jobDir + "/" + gage + "/RUN.SPINUP"
+
     if not os.path.isdir(workDir):
         statusData.errMsg = "ERROR: " + workDir + " not found."
         raise Exception()
@@ -369,6 +370,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
         
         try:
             namelistMod.createHrldasNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,0)
+            namelistMod.createLisNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,0)
             namelistMod.createHydroNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,0)
         except:
             raise
@@ -435,6 +437,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
             startType = 2
         
         try:
+            namelistMod.createLisNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,0)
             namelistMod.createHrldasNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,0)
             namelistMod.createHydroNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,0)
         except:
@@ -621,9 +624,13 @@ def generateSlurmScript(jobData,gageID,runDir,gageMeta):
         fileObj.write(inStr)
         inStr = "#SBATCH -e " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
         fileObj.write(inStr)
-        inStr = '#SBATCH -N ' + str(jobData.nNodesMod) + '\n'
+        #inStr = '#SBATCH -N ' + str(jobData.nNodesMod) + '\n'
+        #fileObj.write(inStr)
+        #inStr = "#SBATCH -n " + str(jobData.nCoresMod) + "\n"
+        inStr = 'slloc -N' + str(jobData.nNodesMod) +  ' --constraint=mil --qos=debug'
         fileObj.write(inStr)
-        inStr = "#SBATCH -n " + str(jobData.nCoresMod) + "\n"
+        fileObj.write('\n')
+        inStr = 'ml comp/intel/2021.4.0'
         fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
@@ -631,7 +638,7 @@ def generateSlurmScript(jobData,gageID,runDir,gageMeta):
         if jobData.jobRunType == 3:
             inStr = 'srun ./wrf_hydro.exe\n'
         if jobData.jobRunType == 6:
-            inStr = 'mpirun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe\n'
+            inStr = 'mpirun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe & ;\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
@@ -709,10 +716,10 @@ def generateMpiScript(jobData,gageID,basinNum,runDir,gageMeta):
             inStr = jobData.mpiCmd + " " + str(jobData.nCoresMod) + " " + jobData.cpuPinCmd + \
                     str(jobData.gageBegModelCpu[basinNum]) + "-" + \
                     str(jobData.gageEndModelCpu[basinNum]) + " ./W" + \
-                    str(jobData.jobID) + str(gageID) + '\n'
+                    str(jobData.jobID) + str(gageID) + ' &' + '\n'
         else:
             inStr = jobData.mpiCmd + " " + str(jobData.nCoresMod) + " ./W" + \
-                    str(jobData.jobID) + str(gageID) + '\n'
+                    str(jobData.jobID) + str(gageID) + ' &' +'\n'
         fileObj.write(inStr)
         fileObj.close
     except:

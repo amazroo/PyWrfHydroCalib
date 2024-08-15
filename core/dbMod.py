@@ -422,7 +422,10 @@ class Database(object):
         if not results:
             jobData.errMsg = "ERROR: No gage data for: " + tmpMeta['gageName']
             raise Exception()
-            
+           
+
+        print("Printing results")
+        print(results)
         tmpMeta['gageID'] = results[0]
         tmpMeta['comID'] = results[2]
         tmpMeta['geoFile'] = results[13]
@@ -444,7 +447,8 @@ class Database(object):
         tmpMeta['optLandRstFile'] = results[42]
         tmpMeta['optHydroRstFile'] = results[43]
         tmpMeta['chanParmFile'] = results[44]
-        
+        tmpMeta['lisNC'] = results[45]
+
     def jobStatus(self,jobData):
         """
         Function to extract job metadata (including status information) for
@@ -1446,7 +1450,31 @@ class Database(object):
             except:
                 jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
                 raise
-                
+            
+            # ADDED BY TML: Copy RouteLink.nc File to FINAL_PARAMETER directory 
+            if staticData.chnRtOpt == 2:
+                # Handle CHANPARM.TBL
+                inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/RouteLink.nc"
+                outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/RouteLink.nc"
+                # Remove existing "best" file.
+                if os.path.isfile(outFile):
+                    try:
+                        os.remove(outFile)
+                    except:
+                        jobData.errMsg = "ERROR: Failure to remove: " + outFile
+                        raise
+                    # Check to ensure existing file exists.
+                    if not os.path.isfile(inFile):
+                        jobData.errMsg = "ERROR: Expected file: " + inFile + " not found."
+                        raise Exception()
+                    # Copy existing parameter files into place.
+                    try:
+                        shutil.copy(inFile,outFile)
+                    except:
+                        jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
+                        raise
+            # END TML CHANGE        
+
             if staticData.chnRtOpt == 3:
                 # Handle CHANPARM.TBL
                 inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/CHANPARM.TBL"
@@ -1510,8 +1538,10 @@ class Database(object):
                 jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
                 raise
                 
-            inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/soil_properties.nc"
-            outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/soil_properties.nc"
+            #inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/soil_properties.nc"
+            #outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/soil_properties.nc"
+            inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/lis.nc"
+            outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/lis.nc"
             # Remove existing "best" file.
             if os.path.isfile(outFile):
                 try:

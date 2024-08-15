@@ -72,6 +72,16 @@ def removeOutput(jobData,runDir):
     Generic function to clean up wrfHydro output. This is used specifically
     between calibration simulations.
     """
+
+    filesCheck = glob.glob(runDir + "/PET*")
+
+    if len(filesCheck) > 0:
+        cmd = "rm " + runDir + "/PET*"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove PET ESMF files from: " + runDir
+
     filesCheck = glob.glob(runDir + "/diag_hydro.*")
     
     if len(filesCheck) > 0:
@@ -129,7 +139,16 @@ def removeOutput(jobData,runDir):
             subprocess.call(cmd,shell=True)
         except:
             jobData.errMsg = "ERROR: Unable to remove Hydro restart files from: " + runDir
-    
+
+    filesCheck = glob.glob(runDir + "/HYD_OUTPUT/restart_*")
+
+    if len(filesCheck) > 0:
+        cmd = "rm " + runDir + "/HYD_OUTPUT/restart_*"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove  LIS Hydro restart files from: " + runDir
+
     filesCheck = glob.glob(runDir + "/RESTART.*_DOMAIN1")
     
     if len(filesCheck) > 0:
@@ -179,7 +198,16 @@ def removeOutput(jobData,runDir):
             subprocess.call(cmd,shell=True)
         except:
             jobData.errMsg = "ERROR: Unable to remove TROUTE flag and status files from: " + runDir
-           
+    
+    filesCheck = glob.glob(runDir + "/lis.config")
+
+    if len(filesCheck) > 0:
+        cmd = "rm " + runDir + "/lis.config"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove LIS CONFIG file from: " + runDir
+
 def cleanCalib(jobData,workDir,runDir):
     """
     Generic function to cleanup calibration-related output, such as text files,
@@ -229,9 +257,21 @@ def scrubParams(jobData,runDir,staticData):
     """
     fullDomFile = runDir + "/Fulldom.nc"
     hydroTbl = runDir + "/HYDRO_TBL_2D.nc"
-    soilFile = runDir + "/soil_properties.nc"
+    #soilFile = runDir + "/soil_properties.nc"
+    soilFile = runDir + "/lis.nc"
     gwFile = runDir + '/GWBUCKPARM.nc'
     chanParmFile = runDir + "/CHANPARM.TBL"
+
+    #ADDED BY TML:
+    rtFile = runDir + '/RouteLink.nc'
+    bakDir = runDir + '/netcdf.bak'
+    # modified by TML to copy files to a back-up directory
+    cmd = "cp " + runDir + "/*.nc " + bakDir
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Unable to back up netcdf files from: " + runDir
+        raise
 
     if os.path.isfile(fullDomFile):
         try:
@@ -261,7 +301,17 @@ def scrubParams(jobData,runDir,staticData):
             except:
                 jobData.errMsg = "ERROR: Failure to remove: " + gwFile
                 raise
-                
+    
+    # ADDED BY TML: Removes additional routing file when run directory is scrubbed
+    if staticData.chnRtOpt == 2:
+        # We are running muskingum routing. Go ahead and remove RouteLink.nc
+        if os.path.isfile(rtFile):
+            try:
+                os.remove(rtFile)
+            except:
+                jobData.errMsg = "ERRROR: Failure to remove: " + rtFile
+                raise
+
     if staticData.chnRtOpt == 3:
         # We are running gridded routing. Go ahead and remove CHANPARM
         if os.path.isfile(chanParmFile):

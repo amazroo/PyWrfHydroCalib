@@ -105,7 +105,8 @@ def main(argv):
         except:
             sys.exit(1)
         try:
-            tmpPath = runDir + "/soil_properties.nc"
+            #tmpPath = runDir + "/soil_properties.nc"
+            tmpPath = runDir + "/lis.nc"
             print(tmpPath)
             shutil.copy(soilOrig,tmpPath)
         except:
@@ -129,7 +130,8 @@ def main(argv):
         # Compose output file paths.
         fullDomOut = runDir + "/Fulldom.nc"
         hydroOut = runDir + "/HYDRO_TBL_2D.nc"
-        soilOut = runDir + "/soil_properties.nc"
+        #soilOut = runDir + "/soil_properties.nc"
+        soilOut = runDir + "/lis.nc"
         gwOut = runDir + '/GWBUCKPARM.nc'
         chanParmOut = runDir + "/CHANPARM.TBL"
             

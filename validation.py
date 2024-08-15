@@ -107,6 +107,9 @@ def main(argv):
     jobData.trouteFlag = staticData.trouteFlag
     jobData.trouteConfig = staticData.trouteConfig
     jobData.moduleLoadStr = staticData.moduleLoadStr
+    jobData.lisConfig = staticData.lis_config_file
+    jobData.nlcConfig = staticData.nlc_config_file
+
     jobData.moduleLoadTrouteStr = staticData.moduleLoadTrouteStr        
     # Check gages in directory to match what's in the database
     try:

@@ -99,13 +99,13 @@ def main(argv):
                        hyd_n integer, geo_file text, land_spatial_meta_file text,
                        wrfinput_file text, soil_file text, fulldom_file text,
                        rtlink_file text, spweight_file text, gw_file text,
-                       gw_mask text, lake_file text, forcing_dir text, obs_file text,
+                       gw_mask text, lake_file text, forcing_dir text, obs_file text, 
                        site_name text, lat real, lon real, area_sqmi real,
                        area_sqkm real, county_cd text, state text, huc2 text,
                        huc4 text, huc6 text, huc8 text, ecol3 text, ecol4 text,
                        rfc text, dx_hydro real, agg_factor integer, hydro_tbl_spatial text,
                        opt_spin_land_path text, opt_spin_hydro_path text,
-                       chan_parm_path text)''')
+                       chan_parm_path text, lis_file text)''')
     except:
         errOut(dbConn,"Unable to create table: Domain_Meta.",dbPath)
         

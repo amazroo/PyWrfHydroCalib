@@ -11,12 +11,12 @@ from core import statusMod
 from core import errMod
 import subprocess
 import time
-import pandas as pd
-import pickle5 as pickle
+import datetime
 from yaml import SafeDumper
 import yaml
 import warnings
 warnings.filterwarnings("ignore")
+import re
 
 def runTroute(statusData,staticData,db,gageID,gage,gageMeta,modType):
 
@@ -549,7 +549,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         # Since these are validation simulations, we are always going to be 
         # starting the model rom an existing RESTART file. startType = 1 is for
         # when we have cold starts. Note 2 indicates a restart. 
-        startType = 2
+        startType = 3
         
         if begDate == staticData.bValidDate:
             if staticData.coldStart == 1:
@@ -562,6 +562,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 startType = 3
         
         try:
+            namelistMod.createLisNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,2)
             namelistMod.createHrldasNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,2)
             namelistMod.createHydroNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,2)
         except:
@@ -643,6 +644,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 startType = 1
         
         try:
+            namelistMod.createLisNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,2)
             namelistMod.createHrldasNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,2)
             namelistMod.createHydroNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,2)
         except:
@@ -1200,7 +1202,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
         # Since these are validation simulations, we are always going to be 
         # starting the model rom an existing RESTART file. startType = 1 is for
         # when we have cold starts. Note 2 indicates a restart. 
-        startType = 2
+        startType = 3
         
         if begDate == staticData.bValidDate:
             if staticData.coldStart == 1:
@@ -1213,6 +1215,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
                 startType = 3
         
         try:
+            namelistMod.createLisNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,3)
             namelistMod.createHrldasNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,3)
             namelistMod.createHydroNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,3)
         except:
@@ -1292,6 +1295,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
                 startType = 1
         
         try:
+            namelistMod.createLisNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,3)
             namelistMod.createHrldasNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,3)
             namelistMod.createHydroNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,3)
         except:
@@ -1549,7 +1553,7 @@ def generateMpiRunScript(jobData,gageID,basinNum,runDir,gageMeta,modName):
         fileObj.write(inStr)
         inStr = 'for FILE in HYDRO_RST.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
-        inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
+        inStr = 'for FILE in HYD_OUTPUT/restart_*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
         if modName == "BEST":
             if len(jobData.cpuPinCmd) > 0:
@@ -1634,6 +1638,7 @@ def generateMpiEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
     try:
         fileObj = open(fileOut,'w')
         fileObj.write('#!/bin/bash\n')
+        fileObj.write('module load R/4.3.1\n')
         inStr = 'cd ' + validWorkDir + '\n'
         fileObj.write(inStr)
         inStr = "Rscript " + validWorkDir + "/valid_workflow.R " + rScript + "\n"
@@ -2246,23 +2251,46 @@ def linkToRst(statusData,gage,runDir,gageMeta,staticData):
     Generic function to link to necessary restart files from the spinup.
     """
     begDate = min(statusData.bValidDate, statusData.bCalibDate)
-    link1 = runDir + "/RESTART." + begDate.strftime('%Y%m%d') + "00_DOMAIN1"
+    lCurrent = begDate - datetime.timedelta(days=1)
+    link1 = runDir + "/LIS_RST_NOAHMP401_" + lCurrent.strftime('%Y%m%d') + "2300.d01.nc"
     link2 = runDir + "/HYDRO_RST." + begDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+    destDir = runDir + "/HYD_INPUT" 
+
     if staticData.optSpinFlag == 0: 
         # Check to make sure symbolic link to spinup state exists.
-        check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
+        lCurrent = statusData.eSpinDate - datetime.timedelta(days=1)
+        check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/LIS_OUTPUT/SURFACEMODEL/" + lCurrent.strftime('%Y%m') + "/LIS_RST_NOAHMP401_" + lCurrent.strftime('%Y%m%d') + "2300.d01.nc"
         check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+        sourceDir = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/HYD_OUTPUT"
         if not os.path.isfile(check1):
             statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
             raise Exception()
         if not os.path.isfile(check2):
             statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
             raise Exception()
+        if not os.path.exists(sourceDir):
+            statusData.errMsg = "ERROR: Spinup state: " + sourceDir + " not found."
+            raise Exception()
         # Create links if they don't exist
         if not os.path.islink(link1):
             os.symlink(check1,link1)
         if not os.path.islink(link2):
             os.symlink(check2,link2)
+        if not os.path.exists(destdir):
+            os.makedirs(destdir)
+
+            dateStr = begDate.strftime('%Y-%m-%dT00:00:00')
+            files = os.listdir(sourceDir)
+            date_pattern = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}')
+
+            for file in files:
+                match = date_pattern.search(file)
+                if match:
+                    # Replace the date string in the file name with the date variable
+                    new_file_name = date_pattern.sub(dateStr, file)
+                    # Create symbolic link
+                    os.symlink(os.path.join(sourceDir, file), os.path.join(destDir, new_file_name)
+
     elif staticData.optSpinFlag != 1:
         # Check to see if file exists, then create symbolic link to it. 
         if gageMeta.optLandRstFile == "-9999":

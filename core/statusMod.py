@@ -18,6 +18,7 @@ import pickle
 import json
 import warnings
 import ast
+import re
 warnings.filterwarnings("ignore")
 
 class statusMeta:
@@ -59,6 +60,8 @@ class statusMeta:
         self.calibFlag = []
         self.trouteFlag = []
         self.trouteConfig = []
+        self.lisConfig = []
+        self.nlcConfig = []
         self.moduleLoadStr = []
         self.moduleLoadTrouteStr = []
         self.calibTbl = []
@@ -527,18 +530,21 @@ def walkMod(bDate,eDate,runDir):
     nHours = int((dt.days*24*3600 + dt.seconds)/3600.0)
     
     bDateOrig = bDate
-    
+    print("Walkmod for...")
+    print(bDateOrig)
     # Initialize flag returned to user as True. Assume model needs to ran.
     runFlag = True
     
     output = []
     for hourModel in range(0,nHours+1):
         dCurrent = bDateOrig + datetime.timedelta(seconds=3600.0*hourModel)
-        lsmRestartPath = runDir + "/RESTART." + dCurrent.strftime('%Y%m%d%H') + "_DOMAIN1"
+        #lsmRestartPath = runDir + "/RESTART." + dCurrent.strftime('%Y%m%d%H') + "_DOMAIN1"
         hydroRestartPath = runDir + "/HYDRO_RST." + dCurrent.strftime('%Y-%m-%d_%H') + ':00_DOMAIN1'
-        
-        if os.path.isfile(lsmRestartPath) and os.path.isfile(hydroRestartPath):
+        lisHydRestartPath = runDir + "/HYD_OUTPUT/restart_HYD_exp_D1_" + dCurrent.strftime('%Y-%m-%dT%H:%M:%S') + "_sfchead.nc" 
+        if os.path.isfile(hydroRestartPath and lisHydRestartPath):
             bDate = dCurrent
+            lCurrent = dCurrent - datetime.timedelta(days=1)
+            lisRestartPath = runDir + "/LIS_OUTPUT/SURFACEMODEL/" + dCurrent.strftime('%Y%m') + "LIS_RST_NOAHMP401_" + dCurrent.strftime('%Y%m%d') + "2300.d01.nc"
             
     # If the bDate has reached the eDate, this means the model completed as expected.
     if bDate == eDate:
@@ -2124,7 +2130,7 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId, programType):
                 status = False
             else:
                 numLinesTmp = len(jobsTmp.split('\n'))
-                # The exptected return from qstat on Cheyenne gives us at least 7 lines to parse.
+                # The expected return from qstat on Cheyenne gives us at least 7 lines to parse.
                 if numLinesTmp < 5:
                     jobData.errMsg = "ERROR: Expected qstat return should be greater than 6 lines."
                     raise Exception()
@@ -2172,7 +2178,7 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId, programType):
                 status = False
                 return status
 
-    if jobData.jobRunType == 3 or jobData.jobRunType == 6:
+    if jobData.jobRunType == 3 or jobData.jobRunType == 5:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \
@@ -2270,12 +2276,19 @@ def submitGroupCalibration(jobData,groupScript,pbsJobId,groupNum):
             jobData.errMsg = "ERROR: Unable to launch: " + groupScript
             raise
 
-    if jobData.jobRunType == 3 or jobData.jobRunType == 6:
+    if jobData.jobRunType == 3 or jobData.jobRunType == 5:
         try:
             jobTmp = subprocess.check_output(['sbatch',groupScript])
-            pbsJobId[groupNum] = int(jobTmp.decode("UTF-8").split('.')[0])
-        except:
-            jobData.errMsg = "ERROR: Unable to launch: " + groupScript
+            tmpStr = jobTmp.decode("UTF-8").split('.')[0]
+            result = re.search(r'\d+', tmpStr)
+
+            if result:
+                extracted_integer = int(result.group())
+            pbsJobId[groupNum] = int(extracted_integer)
+
+        except Exception as e:
+            print(str(e))
+            jobData.errMsg = "ERROR: Unable to launch: " + groupScript + str(e)
             raise
 
     if jobData.jobRunType == 4:
