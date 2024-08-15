@@ -20,36 +20,36 @@
 # Top level directory where output from model runs, etc
 # will be placed. This is essentially your "job" directory
 # containing all the model output, analysis, etc. 
-outDir = /glade/scratch/ishitas/
-expName = troute_run
-acctKey = NRAL0017
-optQueName = regular
-nCoresModel = 9
+outDir = /discover/nobackup/projects/lis-ndmc/isrivast
+expName = nlc_run_demo
+acctKey = s2813
+optQueName = compute
+nCoresModel = 8
 nNodesModel = 1
-nCoresPerNode = 36
+nCoresPerNode = 120
 
 # Flag to turn sensitivity analysis on: 0 - Off, 1 - On.
 runSens = 0 
-sensParmTbl = /glade/work/ishitas/troute_calib/PyWrfHydroCalib/setup_files/sens_params.tbl
+sensParmTbl = /discover/nobackup/projects/lis-ndmc/isrivast/PyWrfHydroCalib/setup_files/sens_params.tbl
 
 # Flag to turn calibration on: 0 - Off, 1 - On.
 runCalib = 1
 
 # Path to the calibration parameters, and their range. Paranmeters flagged 1 will be calibrated. 
-calibParmTbl = /glade/work/ishitas/troute_calib/PyWrfHydroCalib/setup_files/calib_params.tbl
+calibParmTbl = /discover/nobackup/projects/lis-ndmc/isrivast/PyWrfHydroCalib/setup_files/calib_params.tbl
 
 # Flag to turn troute on instead of running MC 
-runTroute = 1
+runTroute = 0
 
 # Path to the troute_config, the config file will be used as is 
 # only the path to the domain files will be changed. 
-trouteConfig = /glade/work/ishitas/troute_calib/PyWrfHydroCalib/setup_files/troute_config.yaml
+trouteConfig = 
 
 # list of all srings to add to the submisssion jobs. This will guarantee to load the proper libraries (python, R, ...)
-moduleLoadStr = ['module load eccodes/2.19.1', 'module load ncarenv/1.3', 'module load ncarcompilers/0.5.0', 'module load nco/4.9.5', 'module load intel/18.0.5', 'module load impi/2018.4.274', 'module load netcdf', 'source /glade/work/ishitas/python_envs/368_demo/bin/activate']
+moduleLoadStr = ["module load R/4.3.1", "source /gpfsm/dnb06/projects/p225/isrivast/python_envs/py_discover-mil/bin/activate"]
 
 # list of all srings to add to the submisssion jobs for Troute. 
-moduleLoadTrouteStr = ['module load eccodes/2.19.1','source /glade/work/rcabell/inland/inland-py39/bin/activate']
+moduleLoadTrouteStr = []
 
 # By default, R code will run hourly analysis on model output. This flag will
 # direct the R code to run daily statistics instead. This means hourly output
@@ -98,9 +98,9 @@ stripCalibHours = 120
 # 3 - We will launch with slurm with srun and monitor via squeue command.
 # 4 - No job scheduler. Run via MPI.
 # jobRunType is how you plan on executing the WRF-Hydro simulations
-jobRunType = 2
+jobRunType = 5
 # Specify the MPI command to use.
-mpiCmd = mpiexec -np
+mpiCmd = mpirun -np
 # Specify the CPU pinning command to supplement the MPI command to pin the model
 # to specific CPUs.
 cpuPinCmd = 
@@ -173,28 +173,37 @@ enableMultiSites = 0
 email = ishitas@ucar.edu 
 
 # Specify executable to run. This must be a WRF-Hydro executable. 
-wrfExe = /glade/work/arezoo/RFC_Training/Post_RFC_CalibTrain2021/wrf_hydro_nwm_public/trunk/NDHMS/Run/wrf_hydro.exe
+wrfExe = /discover/nobackup/projects/lis-ndmc/tlahmers/excutables/LISHYDRO_03_2024_NDMC_SLES15/NASA-Land-Coupler/src/driver/NLC.exe
 # Specify parameter tables to use for Noah-MP
-genParmTbl = /glade/work/arezoo/RFC_Training/Post_RFC_CalibTrain2021/wrf_hydro_nwm_public/trunk/NDHMS/Run/GENPARM.TBL
-mpParmTbl = /glade/work/arezoo/RFC_Training/Post_RFC_CalibTrain2021/wrf_hydro_nwm_public/trunk/NDHMS/Run/MPTABLE.TBL
-urbParmTbl = /glade/work/arezoo/calibration_v30/Task_7/sample_calib/TBLs/URBPARM.TBL
-vegParmTbl = /glade/work/arezoo/calibration_v30/Task_7/sample_calib/TBLs/VEGPARM.TBL
-soilParmTbl = /glade/work/arezoo/RFC_Training/Post_RFC_CalibTrain2021/wrf_hydro_nwm_public/trunk/NDHMS/Run/SOILPARM.TBL
+genParmTbl = /discover/nobackup/projects/lis-ndmc/isrivast/LIS_WRF-Hydro_Run/run/coupled_USGSTEMPLATE_wLR_Domain.noahmp_v4.0.1_cold.nldas2/GENPARM.TBL
+mpParmTbl = /discover/nobackup/projects/nu-wrf/members/tlahmers/WR_DROUGHT/LISWrfHydro_DOMAIN/NOAHMP401_PARMS/MPTABLE.TBL
+urbParmTbl = /discover/nobackup/projects/lis-ndmc/isrivast/LIS_WRF-Hydro_Run/run/coupled_USGSTEMPLATE_wLR_Domain.noahmp_v4.0.1_cold.nldas2/URBPARM.TBL
+vegParmTbl = /discover/nobackup/projects/lis-ndmc/isrivast/LIS_WRF-Hydro_Run/run/coupled_USGSTEMPLATE_wLR_Domain.noahmp_v4.0.1_cold.nldas2/VEGPARM.TBL
+soilParmTbl = /discover/nobackup/projects/lis-ndmc/isrivast/LIS_WRF-Hydro_Run/run/coupled_USGSTEMPLATE_wLR_Domain.noahmp_v4.0.1_cold.nldas2/SOILPARM.TBL
+forcingVarTbl = /discover/nobackup/projects/nu-wrf/lishydro/data/LIS/coupled_tuolumne.noahmp_v4.0.1_cold.nldas2/LIS_INPUTS/forcing_variables.txt
+noahMPLSMTbl = /discover/nobackup/projects/nu-wrf/lishydro/data/LIS/coupled_tuolumne.noahmp_v4.0.1_cold.nldas2/LIS_INPUTS/NOAHMP_OUTPUT_LIST.LSM.TBL
 
 # NOTE Date values should be specified in YYYY-MM-DD format.
 # Specify date range for spinup
-bSpinDate = 2009-10-01
-eSpinDate = 2010-01-01
-
+#bSpinDate = 2007-10-01
+#eSpinDate = 2016-10-01
+bSpinDate = 2007-10-01
+eSpinDate = 2009-10-01
 # Specify date range for calibration period
-bCalibDate = 2010-02-01
-eCalibDate = 2010-03-01
-bCalibEvalDate = 2010-02-05
+#bCalibDate = 2007-10-01
+#eCalibDate = 2013-10-01
+bCalibDate = 2007-10-01
+eCalibDate = 2008-10-01
+bCalibEvalDate = 2007-11-04 
 
 # Specify date range for validation period
-bValidDate = 2010-03-01
-eValidDate = 2010-04-01
-bValidEvalDate = 2010-03-05
+#bValidDate = 2008-10-01
+#eValidDate = 2013-10-01 
+bValidDate = 2008-10-01
+eValidDate = 2009-10-01
+#2010-11-01
+bValidEvalDate = 2008-11-04 
+#2010-03-05
 
 [Sensitivity]
 # Specify parameter sample size
@@ -207,9 +216,9 @@ sensParmSample = 3
 sensBatchNum = 1
 
 # Specify the date range for the sensitivity period.
-bSensDate = 2010-02-01
+bSensDate = 2009-10-01
 eSensDate = 2010-03-01
-bSensEvalDate = 2010-02-05
+bSensEvalDate = 2009-11-05
 
 [gageInfo]
 # Specify USGS GAGES II basins to calibrate on.
@@ -224,7 +233,7 @@ gageListFile =
 # Output-Specific option
 # 1 means that it will output 1 file per output time step
 # 0 means that it will append all the timesteps to one file called LDASOUT_DOMAIN1.nc, right now it is not working
-SplitOutputCount = 0
+SplitOutputCount = 1
 # namelist.hrldas specific options/flags for NoahMP
 # Specify the DYNAMIC_VEG_OPTION
 dynVegOption = 4
@@ -295,7 +304,7 @@ forceDt = 3600
 # NoahMP model timestep
 lsmDt = 3600
 # Output frequency of NoahMP LDASOUT files in seconds
-lsmOutDt = 2160000
+lsmOutDt = 86400
 # Output frequency of NoahMP restart files in seconds.
 # For monthly restart files, please put -9999 here. 
 lsmRstFreq = -9999
@@ -306,11 +315,11 @@ lsmRstFreq = -9999
 # Place -99999 here for monthly restarts. 
 hydroRstFreq = -99999
 # Hydro output frequency
-hydroOutDt = 3600
+hydroOutDt = 86400
 
 [hydroIO]
 # Flag for overwriting soil variables from routing restart file (0:Off,1:On)
-rstType = 1
+rstType = 0
 
 # Options to output channel & bucket influxes. Only active for UDMP_OPT=1.
 # Nonzero choice requires that out_dt above matches NOAH_TIMESTEP in namelist.hrldas.
@@ -322,7 +331,7 @@ output_channelBucket_influx = 0
 # Output-Specific option
 # 1 means that it will output 1 file for CHANOB per output time step
 # 0 means that it will append all the timesteps to one file called CHANOBS_DOMAIN1.nc
-SplitOutputCount = 0
+SplitOutputCount = 1
 
 # Output-Specific output flags for outputs
 # Specify wrfHydro output config.    
@@ -332,7 +341,7 @@ SplitOutputCount = 0
 # 3: Medium Range                               
 # 4: Long Range
 # 5: Retrospective
-ioConfigOutputs = 3
+ioConfigOutputs = 0
 
 # Flag to configure form of output files. 
 # 1: With scale_factor/add_offset + internal compression
@@ -345,12 +354,12 @@ ioFormOutputs = 4
 # Streamflow output  
 # 0: No output
 # 1: Output 
-chrtoutDomain = 1
+chrtoutDomain = 0
 
 # Streamflow NetCDF at forecast points / gage points
 # 0: No output
 # 1: Output
-chanObsDomain = 0
+chanObsDomain = 1
 
 # Gridded channel flow    
 # 0: No output
@@ -383,7 +392,7 @@ lakeOut = 0
 frxstOut = 0
 
 # Reset restart accumulation variables in hydro files? (0:Off,1:On)
-resetHydroAcc = 1
+resetHydroAcc = 0
 
 # Specify order of streamflow to output (0-?)
 streamOrderOut = 1
@@ -432,8 +441,8 @@ gwRestart = 0
 # Specify whether to use compound channel. This is for NWM ONLY. Cannot use with gridded routing.
 # (0: Turn off, 1: Turn on). The enableCompoundChannel needs to be turned on if this is NWM code.
 # If community, set to 0 as it will not be placed into the hydro.namelist.
-enableCompoundChannel = 1
-compoundChannel = 1
+enableCompoundChannel = 0
+compoundChannel = 0
 
 # Specify whether to enable the groundwater bucket loss function in the hydro.namelist file.
 # (0: No option specified in namelist, 1: Place option into namelist).
@@ -442,3 +451,112 @@ enableGwBucketLoss = 0
 # (0: Turn off, 1: Turn on)
 bucket_loss = 0
 
+[lis] 
+surface_model_output_interval=1da
+land_surface_model=Noah-MP.4.0.1
+number_of_met_forcing_sources=1
+blending_method_for_forcings=overlay  
+# overlay or ensemble
+
+met_forcing_sources=NLDAS2
+topographic_correction_method_(met_forcing)=lapse-rate and slope-aspect  
+# “none”
+
+forcing_variables_list_file=./forcing_variables.txt
+output_forcing=1  
+output_parameters=0  
+output_model_restart_files=1
+output_methodology=2d gridspace  
+# for OL run: "2d_gridspace", spin up: none
+
+output_data_format=netcdf
+output_naming_style=3 level hierarchy
+#start_mode=coldstart  # restart or coldstart
+undefined_value=-9999
+#output_directory="LIS_OUTPUT_2D_SOIL_NWM_wLR"      # 'OUTPUT' 
+diagnostic_output_file=LIS_LOGS/lislog 
+# './diag/lislog'
+
+number_of_ensembles_per_tile=1
+number_of_processors_along_x=4
+number_of_processors_along_y=2
+halo_size_along_x=0
+halo_size_along_y=0
+noah-mp.4.0.1_model_timestep=3600ss
+noah-mp.4.0.1_restart_output_interval=1mo
+noah-mp.4.0.1_restart_file=./LIS_RST_NOAHMP401_201609302300.d01.nc
+noah-mp.4.0.1_restart_file_format=netcdf
+noah-mp.4.0.1_soil_parameter_table=./SOILPARM.TBL
+noah-mp.4.0.1_general_parameter_table=./GENPARM.TBL
+noah-mp.4.0.1_mp_parameter_table=./MPTABLE.TBL
+noah-mp.4.0.1_number_of_soil_layers=4
+noah-mp.4.0.1_thickness_of_soil_layers=0.1  0.3  0.6  1.0
+noah-mp.4.0.1_dynamic_vegetation_option=4  
+# 1=prescribed; 2=dynamic; 3=calculate; 4=maximum
+
+noah-mp.4.0.1_canopy_stomatal_resistance_option=1  
+# 1=Ball-Berry; 2=Jarvis
+
+noah-mp.4.0.1_soil_moisture_factor_for_stomatal_resistance=1  
+# 1=Noah; 2=CLM; 3=SSiB
+
+noah-mp.4.0.1_runoff_and_groundwater_option=3  
+# 1=SIMGM; 2=SIMTOP; 3=Schaake96; 4=BATS
+
+noah-mp.4.0.1_surface_layer_drag_coefficient_option=1  
+# 1=M-O; 2=Chen97
+
+noah-mp.4.0.1_supercooled_liquid_water_option=1  
+# 1=NY06; 2=Koren99
+
+noah-mp.4.0.1_frozen_soil_permeability_option=1  
+# 1=NY06; 2=Koren99
+
+noah-mp.4.0.1_radiation_transfer_option=3  
+# 1=gap=F(3D;cosz); 2=gap=0; 3=gap=1-Fveg
+
+noah-mp.4.0.1_snow_surface_albedo_option=2  
+# 1=BATS; 2=CLASS
+
+noah-mp.4.0.1_rainfall_&_snowfall_option=1  
+# 1=Jordan91; 2=BATS; 3=Noah
+
+noah-mp.4.0.1_lower_boundary_of_soil_temperature_option=2  
+# 1=zero-flux; 2=Noah
+
+noah-mp.4.0.1_snow&soil_temperature_time_scheme_option=3  
+# 1=semi-implicit; 2=fully implicit
+
+noah-mp.4.0.1_glacier_option=2  
+# 1=include phase change; 2=slab ice (Noah)
+
+noah-mp.4.0.1_surface_resistance_option=4  
+# 1=Sakaguchi_and_Zeng_2009; 2=Sellers_(1992); 3=adjusted_Sellers; 4=option1_for_non-snow_and_rsurf_snow_for_snow
+
+noah-mp.4.0.1_soil_configuration_option=1  
+# 1=input_dominant_soil_texture; 2=input_soil_texture_varies_with_depth; 3=soil_composition_and_pedotransfer_functions
+
+noah-mp.4.0.1_soil_pedotransfer_function_option=1  
+# 1=Saxton_and_Rawls_(2006) (used when soil_opt=3)
+
+noah-mp.4.0.1_crop_model_option=0  
+# 0=No_crop_model; 1=Liu_et_al._2016; 2=Gecros
+
+noah-mp.4.0.1_urban_physics_option=1  
+# 0=No; 1=Single-layer; 2=Multi-layer_BEP_scheme; 3=Multi-layer_BEM_scheme #TML: Switch_to_1_to_check_possible_Urban_issues_in_domain...
+noah-mp.4.0.1_initial_surface_skin_temperature=290.0
+noah-mp.4.0.1_initial_soil_temperatures="285.0  283.0  279.0  277.0"
+noah-mp.4.0.1_initial_total_soil_moistures="0.20   0.21   0.25   0.27"
+noah-mp.4.0.1_initial_snow_depth=0.0
+noah-mp.4.0.1_initial_snow_water_equivalent=0.0
+noah-mp.4.0.1_initial_total_canopy_surface_water=0.0  
+# TML: Added_variable
+noah-mp.4.0.1_initial_water_table_depth=2.5
+noah-mp.4.0.1_initial_water_in_the_aquifer=4900.0
+noah-mp.4.0.1_initial_water_in_aquifer_and_saturated_soil=4900.0
+noah-mp.4.0.1_initial_leaf_area_index=0.5
+noah-mp.4.0.1_reference_height_of_temperature_and_humidity=10.0
+
+template_open_water_timestep=15mn
+lis_config_file = /discover/nobackup/projects/lis-ndmc/isrivast/PyWrfHydroCalib/setup_files/lis.config
+nlc_config_file = /discover/nobackup/projects/lis-ndmc/isrivast/PyWrfHydroCalib/setup_files/nlc.runconfig
