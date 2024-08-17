@@ -128,10 +128,10 @@ enableSoilMoistureCalib = 0
 # 5.) Kge
 # 6.) Msof
 # 7.) hyperResMultiObj
-# 8.) Kge-lf --> KGE for low flows based on Garcia et al. (2017) check the R function hydroGOF::KGElf
+# 8.) Kgelf --> KGE for low flows based on Garcia et al. (2017) check the R function hydroGOF::KGElf
 #objectiveFunction = Kge
 
-streamflowObjectiveFunction = Kge-lf
+streamflowObjectiveFunction = Kgelf
 snowObjectiveFunction = Kge
 soilMoistureObjectiveFunction = Kge
 

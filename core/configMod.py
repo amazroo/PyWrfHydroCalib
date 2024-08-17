@@ -789,8 +789,8 @@ def checkConfig(parser):
     #if check != "Rmse" and check != "Nse" and check != "NseLog" and check != "NseWt" and check != "Kge" and check != "Msof" and check != "hyperResMultiObj":
     #    print("ERROR: Only acceptable objectiveFunction values are: Rmse, Nse, NseLog, NseWt, Kge, and hyperResMultiObj") # commented by Xia 20200618
     if (check != "Rmse" and check != "Nse" and check != "NseLog" and check != "NseWt" and check != "Kge" and check != "Msof" and check != "hyperResMultiObj"  
-      and check != "NNseSq" and check != "LBEmPrime" and check != "EventMultiObj" and check != "Kge-lf"):
-        print("ERROR: Only acceptable objectiveFunction values are: Rmse, Nse, NseLog, NseWt, Kge, hyperResMultiObj, NNseSq, LBEmPrime, EventMultiObj, Kge-lf")
+      and check != "NNseSq" and check != "LBEmPrime" and check != "EventMultiObj" and check != "Kgelf"):
+        print("ERROR: Only acceptable objectiveFunction values are: Rmse, Nse, NseLog, NseWt, Kge, hyperResMultiObj, NNseSq, LBEmPrime, EventMultiObj, Kgelf")
         raise Exception()
         
     check = int(parser.get('logistics','numIter'))
