@@ -214,6 +214,16 @@ Kge <- function (m, o, na.rm=TRUE, s.r=1, s.alpha=1, s.beta=1) {
   kges = 1-eds
 }
 
+# KGE Low Flows (Garcia et al 2017); check the details here ?hydroGOF::KGElf
+Kge_lf <- function (m, o, na.rm=TRUE, s.r=1, s.alpha=1, s.beta=1, method="2009") {
+  tryCatch({hydroGOF::KGElf(sim=m, obs=o, na.rm=na.rm, method=method, epsilon.type="Pushpalatha2012", out.type="single")},
+          error=function(e){
+            warning(paste0('KGE calculation failed with ',e))
+            return(NA)
+          })
+}
+
+
 # multi-scale objective function (MSOF)
 # There is not limit on the number of scales to be considered
 # The value of scales is defined as the number of time steps of data.

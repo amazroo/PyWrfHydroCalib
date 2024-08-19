@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 args <- commandArgs(trailingOnly=TRUE) 
-namelistFile <- args[1] 
+namelistFile <- args[1]
 #mCurrent <- args[2]
 
 #.libPaths("/glade/u/home/adugger/system/R/Libraries/R3.2.2")
@@ -23,8 +23,7 @@ source(namelistFile)
 # Metrics
 #metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "nnsesq","nnse", "kge", "msof", "hyperResMultiObj", "eventmultiobj","POD", "FAR", "CSI", "corr1", "lbem", "lbemprime") 
 #metrics_snow <-  c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "nnsesq","nnse", "kge")
-metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt","nnse","nnsesq","kge", "msof", "hyperResMultiObj", "eventmultiobj","peak_bias","peak_tm_err_hr","event_volume_bias",
-             "POD", "FAR", "CSI", "corr1", "lbem", "lbemprime") # Xia 20210610
+metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt","nnse","nnsesq","kge", "kge_lf", "msof", "hyperResMultiObj", "POD", "FAR", "CSI", "corr1")
 metrics_streamflow <- metrics
 event_metrics_daily<-data.table(eventmultiobj=-9999, peak_bias=-9999, peak_tm_err_hr=-9999, event_volume_bias=-9999) # Xia 20210610
 metrics_snow <-  c("cor", "rmse", "bias", "nse", "kge") # Xia 20200610
@@ -44,7 +43,8 @@ if (file.exists(paste0(runDir, "/proj_data.Rdata"))) {
    runDirCheck3 <- runDir
    
    load(paste0(runDir, "/proj_data.Rdata"))
-   
+   # metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt","nnse","nnsesq","kge", "kge_lf", "msof", "hyperResMultiObj", "POD", "FAR", "CSI", "corr1")
+   # metrics_streamflow <- metrics
    if (writePlotDir != writePlotDirCheck3){
       writePlotDir <- writePlotDirCheck3
       outPath <- outPathCheck
@@ -319,7 +319,8 @@ if (cyclecount > 0) {
             nsewt = NseWtM(q_cms, obs), #consider adding constant value to station with the occurrence of zero flows
             nnse = NNse(q_cms, obs),
             nnsesq = NNseSq(q_cms, obs), 
-            kge = hydroGOF::KGE(q_cms, obs, na.rm=TRUE, method="2009", out.type="single"), # Gupta et al (2009) is the basis of lbeprime 
+            kge = hydroGOF::KGE(q_cms, obs, na.rm=TRUE, method="2009", out.type="single"), # Gupta et al (2009) is the basis of lbeprime            
+            kge_lf = Kge_lf(q_cms, obs), 
             hyperResMultiObj = hyperResMultiObj(q_cms, obs, na.rm=TRUE),
             msof = Msof(q_cms, obs, scales),
             #eventmultiobj = EventMultiObj(q_cms, obs, weight1=1, weight2=0, POSIXct, siteId) 
@@ -342,7 +343,7 @@ if (cyclecount > 0) {
          w = which(names(my_exprs) %in% metrics_streamflow)
          w2 = which(names(my_exprs2) %in% metrics_streamflow)
          if (!calcDailyStats) w3 = which(names(my_exprs3) %in% metrics) # Xia added 20210610
-         
+
          # let s just take care of objective function being capital
          objFn <- tolower(streamflowObjFunc)
          
@@ -359,9 +360,9 @@ if (cyclecount > 0) {
             }
             
             # Calc objective function
-            if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - stat[, objFn, with = FALSE]  
+            if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge", "kge_lf","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - stat[, objFn, with = FALSE]  
             if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new_streamflow <- stat[, objFn, with = FALSE] 
-            
+            if (is.na(F_new_streamflow)) F_new_streamflow <- 999
             # Archive results
             x_archive[cyclecount,] <- c(cyclecount, x_new, F_new_streamflow, stat[, c(metrics_streamflow), with = FALSE])
             
@@ -389,9 +390,9 @@ if (cyclecount > 0) {
             }
             names(statW) <- metrics_streamflow
             
-            if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - statW[objFn] 
+            if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge", "kge_lf","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - statW[objFn] 
             if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new_streamflow <- statW[objFn] 
-            
+            if (is.na(F_new_streamflow)) F_new_streamflow <- 999
             # Archive results
             x_archive[cyclecount,] <- c(cyclecount, x_new, F_new_streamflow, statW)
             index1 = (cyclecount - 1) *nrow(stat)
