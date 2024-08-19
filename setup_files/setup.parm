@@ -55,7 +55,7 @@ moduleLoadTrouteStr = []
 # direct the R code to run daily statistics instead. This means hourly output
 # will be aggregated to daily statistics. 
 # 0 - Run hourly stats, 1 - Run daily stats
-dailyStats = 0
+dailyStats = 1
 
 # Flag to turn on/off database backup. If on, the database file will be locked and
 # backed up once an hour during the execution to the job directory output file.
@@ -316,7 +316,7 @@ lsmRstFreq = -9999
 # Place -99999 here for monthly restarts. 
 hydroRstFreq = -99999
 # Hydro output frequency
-hydroOutDt = 86400
+hydroOutDt = 3600
 
 [hydroIO]
 # Flag for overwriting soil variables from routing restart file (0:Off,1:On)
