@@ -218,11 +218,18 @@ Kge <- function (m, o, na.rm=TRUE, s.r=1, s.alpha=1, s.beta=1) {
 Kge_lf <- function (m, o, na.rm=TRUE, s.r=1, s.alpha=1, s.beta=1, method="2009") {
   tryCatch({hydroGOF::KGElf(sim=m, obs=o, na.rm=na.rm, method=method, epsilon.type="Pushpalatha2012", out.type="single")},
           error=function(e){
-            warning(paste0('KGE calculation failed with ',e))
+            warning(paste0('KGE_lowFlow calculation failed with ',e))
             return(NA)
           })
 }
 
+Pbiasfdc <- function(m, o, na.rm=TRUE, lQ.thr=0.7, hQ.thr=0.2) { #Thresholds are from (Yilmaz et al 2008: A process-based diagnostic approach)
+  tryCatch({hydroGOF::pbiasfdc(sim=m, obs=o, lQ.thr=lQ.thr, hQ.thr=hQ.thr, na.rm=na.rm, plot=FALSE, verbose=TRUE)},
+            error=function(e){
+              warning(paste0('pbiasfdc calculation failed with ',e))
+              return(NA)
+            })
+}
 
 # multi-scale objective function (MSOF)
 # There is not limit on the number of scales to be considered

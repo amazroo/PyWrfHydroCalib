@@ -23,7 +23,7 @@ source(namelistFile)
 # Metrics
 #metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "nnsesq","nnse", "kge", "msof", "hyperResMultiObj", "eventmultiobj","POD", "FAR", "CSI", "corr1", "lbem", "lbemprime") 
 #metrics_snow <-  c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "nnsesq","nnse", "kge")
-metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt","nnse","nnsesq","kge", "kge_lf", "msof", "hyperResMultiObj", "POD", "FAR", "CSI", "corr1")
+metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt","nnse","nnsesq","kge", "kge_lf", "pbiasfdc", "msof", "hyperResMultiObj", "POD", "FAR", "CSI", "corr1")
 metrics_streamflow <- metrics
 event_metrics_daily<-data.table(eventmultiobj=-9999, peak_bias=-9999, peak_tm_err_hr=-9999, event_volume_bias=-9999) # Xia 20210610
 metrics_snow <-  c("cor", "rmse", "bias", "nse", "kge") # Xia 20200610
@@ -323,6 +323,7 @@ if (cyclecount > 0) {
             kge_lf = Kge_lf(q_cms, obs), 
             hyperResMultiObj = hyperResMultiObj(q_cms, obs, na.rm=TRUE),
             msof = Msof(q_cms, obs, scales),
+            pbiasfdc = Pbiasfdc(q_cms, obs),
             #eventmultiobj = EventMultiObj(q_cms, obs, weight1=1, weight2=0, POSIXct, siteId) 
          ))
          my_exprs2 = quote(list(
