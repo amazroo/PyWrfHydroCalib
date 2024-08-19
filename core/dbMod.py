@@ -1040,14 +1040,14 @@ class Database(object):
             if not results:
                 # Create "empty" entry into table.  
                 sqlCmd = "insert into \"Calib_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\"," + \
+                         "cor,nse,nselog,kge,kge_lf,fdcerr,msof,\"hyperResMultiObj\"," + \
                          "nnsesq, eventmultiobj, lbem, lbemprime, corr1, pod, far, csi," + \
                          "nnse, peak_bias, peak_tm_err_hr, event_volume_bias," + \
                          "cor_snow, rmse_snow, bias_snow, nse_snow, kge_snow," + \
                          "cor_soil, rmse_soil, bias_soil, nse_soil, kge_soil, kge_alpha_soil,"+\
                          "best, complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999," + \
@@ -1114,11 +1114,11 @@ class Database(object):
                 # Create "empty" entry into table.
                 # First for hourly stats 
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\","  + \
+                         "cor,nse,nselog,kge,kge_lf,fdcerr,msof,\"hyperResMultiObj\","  + \
                          "nnsesq, eventmultiobj, lbem, lbemprime, corr1, pod, far, csi," + \
                          "\"timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,'hourly',0);"
 
                 attempts = 0
@@ -1140,11 +1140,11 @@ class Database(object):
                     
                 # Next for daily stats 
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\"," + \
+                         "cor,nse,nselog,kge,kge_lf,fdcerr,msof,\"hyperResMultiObj\"," + \
                          "nnsesq, eventmultiobj, lbem, lbemprime, corr1, pod, far, csi," + \
                          "\timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,'daily',0);"
 
                 attempts = 0
@@ -1399,6 +1399,7 @@ class Database(object):
         nse = str(tblData.nse[0])
         nselog = str(tblData.nselog[0])
         kge = str(tblData.kge[0])
+        kge_lf = str(tblData.kge_lf[0])
         fdc = str(-9999)
         msof = str(tblData.msof[0])
         hyperResMultiObj = str(tblData.hyperResMultiObj[0])
@@ -1606,11 +1607,15 @@ class Database(object):
                         attempts = attempts + 1
                 
         # Update Calib_Stats table. 
-        sqlCmd = "update \"Calib_Stats\" set \"objfnVal\"='" + objF + "', " + \
-                 "bias='" + bias + "', rmse='" + \
-                 rmse + "', cor='" + cor + "', nse='" + \
-                 nse + "', nselog='" + nselog + "', kge='" + \
-                 kge + "', fdcerr='" + fdc + \
+        sqlCmd = "update \"Calib_Stats\" set \"objfnVal\"='" + objF + \
+                 "', bias='" + bias + \
+                 "', rmse='" + rmse + \
+                 "', cor='" + cor + \
+                 "', nse='" + nse + \
+                 "', nselog='" + nselog + \
+                 "', kge='" + kge + \
+                 "', kge_lf='" + kge_lf + \
+                 "', fdcerr='" + fdc + \
                  "', msof='" + msof + \
                  "', hyperResMultiObj='" + hyperResMultiObj + \
                  "', nnsesq='" + nnsesq + \
@@ -1822,7 +1827,7 @@ class Database(object):
         # Loop through table and enter information into DB. 
         for stat in range(0,numStats):
             sqlCmd = "insert into \"Valid_Stats\" (\"jobID\",\"domainID\",simulation,\"evalPeriod\"," + \
-                     "\"objfnVal\",bias,rmse,cor,nse,nselog,\"nseWt\",kge,msof,\"hyperResMultiObj\"," + \
+                     "\"objfnVal\",bias,rmse,cor,nse,nselog,\"nseWt\",kge,kge_lf,msof,\"hyperResMultiObj\"," + \
                      "nnsesq, eventmultiobj, lbem, lbemprime, corr1, pod, far, csi, nnse, peak_bias, peak_tm_err_hr," + \
                      "event_volume_bias, obj_snow, cor_snow, rmse_snow, bias_snow, nse_snow, kge_snow," + \
                      "obj_soil, cor_soil, rmse_soil, bias_soil, nse_soil, kge_soil, kge_alpha_soil) values (" + str(jobID) + \
@@ -1831,7 +1836,7 @@ class Database(object):
                      str(tblData.bias[stat]) + "," + str(tblData.rmse[stat]) + "," + \
                      str(tblData.cor[stat]) + "," + str(tblData.nse[stat]) + "," + \
                      str(tblData.nselog[stat]) + "," + str(tblData.nsewt[stat]) + "," + \
-                     str(tblData.kge[stat]) + "," + str(tblData.msof[stat]) + "," + \
+                     str(tblData.kge[stat]) + "," + str(tblData.kge_lf[stat]) + "," + str(tblData.msof[stat]) + "," + \
                      str(tblData.hyperResMultiObj[stat]) + "," + \
                      str(tblData.nnsesq[stat]) + "," + str(tblData.eventmultiobj[stat]) + "," + \
                      str(tblData.lbem[stat]) + "," + str(tblData.lbemprime[stat]) + "," + \
