@@ -1332,7 +1332,7 @@ def generateValidGroupScript(jobData,groupNum,scriptPath,valid_type,topDir):
             if len(jobData.acctKey.strip()) > 0:
                 inStr = "#SBATCH --account=" + str(jobData.acctKey) + '\n'
                 fileObj.write(inStr)
-            inStr = "#SBATCH --time=03:00:00\n"
+            inStr = "#SBATCH --time=12:00:00\n"
             fileObj.write(inStr)
             if len(jobData.queName.strip()) > 0:
                 inStr = "#SBATCH --partition=" + str(jobData.queName) + "\n"
