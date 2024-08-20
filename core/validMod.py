@@ -2276,8 +2276,8 @@ def linkToRst(statusData,gage,runDir,gageMeta,staticData):
             os.symlink(check1,link1)
         if not os.path.islink(link2):
             os.symlink(check2,link2)
-        if not os.path.exists(destdir):
-            os.makedirs(destdir)
+        if not os.path.exists(destDir):
+            os.makedirs(destDir)
 
             dateStr = begDate.strftime('%Y-%m-%dT00:00:00')
             files = os.listdir(sourceDir)
