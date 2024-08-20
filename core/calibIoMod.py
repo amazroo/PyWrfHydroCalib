@@ -1343,8 +1343,8 @@ def generateValidGroupScript(jobData,groupNum,scriptPath,valid_type,topDir):
             inStr = "#SBATCH -e " + jobData.jobDir + "/WVG_" + str(jobData.jobID) + "_" + \
                         str(groupNum) + ".err\n"
             fileObj.write(inStr)
-            #inStr = "#SBATCH -N " + str(jobData.nNodesMod) + '\n'
-            inStr = "slloc -N" + str(jobData.nNodesMod) + " --constraint=mil --qos=debug"
+            inStr = "#SBATCH -N " + str(jobData.nNodesMod) + '\n'
+            # inStr = "slloc -N" + str(jobData.nNodesMod) + " --constraint=mil --qos=debug"
             fileObj.write(inStr)
             inStr = "#SBATCH -n " + str(jobData.nCoresMod) + "\n"
             fileObj.write(inStr)
