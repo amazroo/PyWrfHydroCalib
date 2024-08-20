@@ -2289,7 +2289,7 @@ def linkToRst(statusData,gage,runDir,gageMeta,staticData):
                     # Replace the date string in the file name with the date variable
                     new_file_name = date_pattern.sub(dateStr, file)
                     # Create symbolic link
-                    os.symlink(os.path.join(sourceDir, file), os.path.join(destDir, new_file_name)
+                    os.symlink(os.path.join(sourceDir, file), os.path.join(destDir, new_file_name))
 
     elif staticData.optSpinFlag != 1:
         # Check to see if file exists, then create symbolic link to it. 
