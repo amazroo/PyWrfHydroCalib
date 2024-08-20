@@ -364,7 +364,7 @@ if (cyclecount > 0) {
             # Calc objective function
             if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge", "kge_lf","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - stat[, objFn, with = FALSE]  
             if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new_streamflow <- stat[, objFn, with = FALSE] 
-            if (is.na(F_new_streamflow)) F_new_streamflow <- 99999 #replace objValue=NA with a very bad value
+            if (is.na(F_new_streamflow)) F_new_streamflow <- 9e9 #replace objValue=NA with a very bad value
             # Archive results
             x_archive[cyclecount,] <- c(cyclecount, x_new, F_new_streamflow, stat[, c(metrics_streamflow), with = FALSE])
             
@@ -394,7 +394,7 @@ if (cyclecount > 0) {
             
             if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge", "kge_lf","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - statW[objFn] 
             if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new_streamflow <- statW[objFn] 
-            if (is.na(F_new_streamflow)) F_new_streamflow <- 99999 #replace objValue=NA with a very bad value
+            if (is.na(F_new_streamflow)) F_new_streamflow <- 9e9 #replace objValue=NA with a very bad value
             # Archive results
             x_archive[cyclecount,] <- c(cyclecount, x_new, F_new_streamflow, statW)
             index1 = (cyclecount - 1) *nrow(stat)
