@@ -325,6 +325,7 @@ if (cyclecount > 0) {
             hyperResMultiObj = hyperResMultiObj(q_cms, obs, na.rm=TRUE),
             msof = Msof(q_cms, obs, scales),
             pbiasfdc = Pbiasfdc(q_cms, obs),
+            Pbiasflv = PbiasFLV(q_cms, obs),
             #eventmultiobj = EventMultiObj(q_cms, obs, weight1=1, weight2=0, POSIXct, siteId) 
          ))
          my_exprs2 = quote(list(

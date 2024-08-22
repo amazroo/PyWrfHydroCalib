@@ -66,7 +66,7 @@ def main(argv):
         dbConn.execute('''CREATE TABLE Calib_Stats
                        (jobID integer, domainID integer, iteration integer,
                        objfnVal real, bias real, rmse real, cor real,
-                       nse real, nselog real, kge real, kge_lf real, pbiasfdc real, fdcerr real,
+                       nse real, nselog real, kge real, kge_lf real, pbiasfdc real, pbiasflv real, fdcerr real,
                        msof real, hyperResMultiObj real, 
                        nnsesq real, eventmultiobj real, lbem real, lbemprime real, 
                        corr1 real, pod real, far real, csi real,
@@ -139,7 +139,7 @@ def main(argv):
         dbConn.execute('''CREATE TABLE Valid_Stats
                         (jobID integer, domainID integer, simulation text,
                         evalPeriod text, objfnVal real, bias real, rmse real,
-                        cor real, nse real, nselog real, nseWt real, kge real, kge_lf real, pbiasfdc real,
+                        cor real, nse real, nselog real, nseWt real, kge real, kge_lf real, pbiasfdc real, pbiasflv real,
                         msof real, hyperResMultiObj real,
                         nnsesq real, eventmultiobj real, lbem real, lbemprime real, 
                         corr1 real, pod real, far real, csi real,

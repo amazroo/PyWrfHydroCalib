@@ -231,6 +231,28 @@ Pbiasfdc <- function(m, o, na.rm=TRUE, lQ.thr=0.7, hQ.thr=0.2) { #Thresholds are
             })
 }
 
+PbiasFLV <- function(m, o, log_trans=TRUE, hQ.thr=0.7) { #Thresholds are from (Yilmaz et al 2008: A process-based diagnostic approach)
+  tryCatch({
+              n=length(m)
+              L = round(n*(1-hQ.thr))
+              if (log_trans) {
+                epsilon = mean(o, na.rm=T)/100
+                # pick the first L values from the sorted arrays
+                m_lf = log(sort(m)[1:L] + epsilon) 
+                o_lf = log(sort(o)[1:L] + epsilon) 
+              } else {
+                m_lf = sort(m)[1:L] 
+                o_lf = sort(o)[1:L]
+              }
+              m_min = m_lf[1]
+              o_min = o_lf[1]
+              return(-100*(sum(m_lf - m_min) - sum(o_lf - o_min))/sum(o_lf - o_min))
+           }, error=function(e){
+              warning(paste0('pbiasFLV calculation failed with ',e))
+              return(NA)
+           })
+}
+
 # multi-scale objective function (MSOF)
 # There is not limit on the number of scales to be considered
 # The value of scales is defined as the number of time steps of data.

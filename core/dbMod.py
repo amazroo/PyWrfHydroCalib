@@ -1114,11 +1114,11 @@ class Database(object):
                 # Create "empty" entry into table.
                 # First for hourly stats 
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,kge_lf,pbiasfdc,fdcerr,msof,\"hyperResMultiObj\","  + \
+                         "cor,nse,nselog,kge,kge_lf,pbiasfdc,pbiasflv,fdcerr,msof,\"hyperResMultiObj\","  + \
                          "nnsesq, eventmultiobj, lbem, lbemprime, corr1, pod, far, csi," + \
                          "\"timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,'hourly',0);"
 
                 attempts = 0
@@ -1140,11 +1140,11 @@ class Database(object):
                     
                 # Next for daily stats 
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,kge_lf,pbiasfdc,fdcerr,msof,\"hyperResMultiObj\"," + \
+                         "cor,nse,nselog,kge,kge_lf,pbiasfdc,pbiasflv,fdcerr,msof,\"hyperResMultiObj\"," + \
                          "nnsesq, eventmultiobj, lbem, lbemprime, corr1, pod, far, csi," + \
                          "\timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,'daily',0);"
 
                 attempts = 0
@@ -1401,6 +1401,7 @@ class Database(object):
         kge = str(tblData.kge[0])
         kge_lf = str(tblData.kge_lf[0])
         pbiasfdc = str(tblData.pbiasfdc[0])
+        pbiasflv = str(tblData.pbiasflv[0])
         fdc = str(-9999)
         msof = str(tblData.msof[0])
         hyperResMultiObj = str(tblData.hyperResMultiObj[0])
@@ -1617,6 +1618,7 @@ class Database(object):
                  "', kge='" + kge + \
                  "', kge_lf='" + kge_lf + \
                  "', pbiasfdc='" + pbiasfdc + \
+                 "', pbiasflv='" + pbiasflv + \
                  "', fdcerr='" + fdc + \
                  "', msof='" + msof + \
                  "', hyperResMultiObj='" + hyperResMultiObj + \
@@ -1829,7 +1831,7 @@ class Database(object):
         # Loop through table and enter information into DB. 
         for stat in range(0,numStats):
             sqlCmd = "insert into \"Valid_Stats\" (\"jobID\",\"domainID\",simulation,\"evalPeriod\"," + \
-                     "\"objfnVal\",bias,rmse,cor,nse,nselog,\"nseWt\",kge,kge_lf,pbiasfdc,msof,\"hyperResMultiObj\"," + \
+                     "\"objfnVal\",bias,rmse,cor,nse,nselog,\"nseWt\",kge,kge_lf,pbiasfdc,pbiasflv,msof,\"hyperResMultiObj\"," + \
                      "nnsesq, eventmultiobj, lbem, lbemprime, corr1, pod, far, csi, nnse, peak_bias, peak_tm_err_hr," + \
                      "event_volume_bias, obj_snow, cor_snow, rmse_snow, bias_snow, nse_snow, kge_snow," + \
                      "obj_soil, cor_soil, rmse_soil, bias_soil, nse_soil, kge_soil, kge_alpha_soil) values (" + str(jobID) + \
@@ -1839,8 +1841,8 @@ class Database(object):
                      str(tblData.cor[stat]) + "," + str(tblData.nse[stat]) + "," + \
                      str(tblData.nselog[stat]) + "," + str(tblData.nsewt[stat]) + "," + \
                      str(tblData.kge[stat]) + "," + str(tblData.kge_lf[stat]) + "," + \
-                     str(tblData.pbiasfdc[stat]) + "," + str(tblData.msof[stat]) + "," + \
-                     str(tblData.hyperResMultiObj[stat]) + "," + \
+                     str(tblData.pbiasfdc[stat]) + "," + str(tblData.pbiasflv[stat]) + "," + \
+                     str(tblData.msof[stat]) + "," + str(tblData.hyperResMultiObj[stat]) + "," + \
                      str(tblData.nnsesq[stat]) + "," + str(tblData.eventmultiobj[stat]) + "," + \
                      str(tblData.lbem[stat]) + "," + str(tblData.lbemprime[stat]) + "," + \
                      str(tblData.corr1[stat]) + "," + str(tblData.POD[stat]) + "," + \
