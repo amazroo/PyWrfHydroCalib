@@ -846,6 +846,27 @@ if (cyclecount > 0) {
       
       ggsave(filename=paste0(writePlotDir, "/", siteId, "_scatter.png"),
              plot=gg, units="in", width=8, height=8, dpi=300)
+
+
+      # Plotting the Flow Duration Curve plot of the best, last and control run.
+      write("FDC plotting ...", stdout())
+      png(filename=paste0(writePlotDir, "/", siteId, "_FDC.png"), width=6, height=5, units="in", res=300)
+      fdc_v_list <- ls()[grep("chrt.obj.[0-9]", ls())] 
+      fdc_i <- fdc_v_list %>% strsplit("[.]") %>% unlist %>% .[3*(1:length(fdc_v_list))]
+      fdc_v_meta <- data.table(var_name=fdc_v_list, iter=fdc_i) %>% arrange(iter %>% as.numeric())
+      fdc_DT <- obs.obj %>% select(POSIXct, obs) %>% setnames(old='obs',new='Observation')
+      my_list <- list('Control'=1, 'Best'=iter_best, 'Last'=nrow(fdc_v_meta))
+      for (i in seq_along(my_list)){
+         tag = names(my_list)[i]
+         ind = my_list[[i]]
+         fdc_dt = get(fdc_v_meta$var_name[ind]) %>% dplyr::select(POSIXct, q_cms) %>% setnames(old='q_cms', new=paste(tag,'Run'))
+         fdc_DT <- merge(fdc_DT, fdc_dt, by='POSIXct', all.y=T)
+      }
+      e = mean(fdc_DT$Observation, na.rm=T)/100 # based on Pushpalatha2012 epsilon formula
+      hydroTSM::fdc(fdc_DT[,!"POSIXct"]+e, main=paste0('Flow Duration Curve: site ',siteId, "\n", siteName), lwd=c(2,2,2,1), pch=c(1,1,1,1), cex=0, lty=c(1,2,1,3))
+      grid(nx = 2, ny = NULL)
+      dev.off()
+
       }
 
 # ------------------------------------------------------
