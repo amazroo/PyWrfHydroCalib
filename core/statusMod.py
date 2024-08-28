@@ -2181,11 +2181,12 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId, programType):
     if jobData.jobRunType == 3 or jobData.jobRunType == 5:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
-        cmd = "squeue -u " + str(jobData.owner) + \
-              ' --format=\"%.18i %.9P %.32j %.8u %.2t %.10M %.6D %R\"' + \
-              ' > ' + csvPath
+        sq_format = '  --format=\"%.18i %.9P %.32j %.8u %.2t %.10M %.6D %R\"'
+        cmd_0 = "squeue -u " + str(jobData.owner) + sq_format + ' | head -1' + ' > ' + csvPath
+        cmd_1 = "squeue -u " + str(jobData.owner) + sq_format + ' | grep \"WSG_\|WCG_\|WVG_\"' + ' >> ' + csvPath
         try:
-            subprocess.call(cmd, shell=True)
+            subprocess.call(cmd_0, shell=True)
+            subprocess.call(cmd_1, shell=True)
         except:
             jobData.errMsg = "ERROR: Unable to pipe SLURM output to: " + csvPath
             raise
