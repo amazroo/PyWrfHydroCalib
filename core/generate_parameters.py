@@ -107,6 +107,8 @@ def main(argv):
     # Copy baseline parameter values to best directory for adjustment
     try:
         shutil.copy(fullDomOrig,fullDomBest)
+        if os.path.islink(soilBest):
+            os.unlink(soilBest)
         shutil.copy(soilOrig,soilBest)
         if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
             shutil.copy(gwOrig,gwBest)

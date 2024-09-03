@@ -2203,7 +2203,7 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId, programType):
 
         # Delete temporary CSV files.
         cmdTmp = "rm -rf " + csvPath
-        subprocess.call(cmd, shell=True)
+        subprocess.call(cmdTmp, shell=True)
 
         # Compile expected job name that the job should occupy.
         expName = programType + "_" + str(jobData.jobID) + "_" + str(groupNum)
