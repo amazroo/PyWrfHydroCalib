@@ -318,9 +318,12 @@ for (i in 1:length(runList[[1]])) {
         nsewt = NseWtM(q_cms, obs), 
         nnse = NNse(q_cms, obs),
         nnsesq = NNseSq(q_cms, obs), 
-        kge = hydroGOF::KGE(q_cms, obs, na.rm=TRUE, method="2009", out.type="single"), 
+        kge = hydroGOF::KGE(q_cms, obs, na.rm=TRUE, method="2009", out.type="single"),
+        kge_lf = Kge_lf(q_cms, obs), 
         hyperResMultiObj = hyperResMultiObj(q_cms, obs, na.rm=TRUE),
         msof = Msof(q_cms, obs, scales),
+        pbiasfdc = Pbiasfdc(q_cms, obs),
+        pbiasflv = PbiasFLV(q_cms, obs),
         #eventmultiobj = EventMultiObj(q_cms, obs, weight1=1, weight2=0, POSIXct, siteId) 
       ))
       my_exprs2 = quote(list(
@@ -357,7 +360,7 @@ for (i in 1:length(runList[[1]])) {
            stat$CSI = calc_contingency_stats(chrt.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$CSI
         }
 
-        if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - stat[, objFn, with = FALSE]
+        if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge","kge_lf","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - stat[, objFn, with = FALSE]
         if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new_streamflow <- stat[, objFn, with = FALSE] 
 
         # Archive results
@@ -388,7 +391,7 @@ for (i in 1:length(runList[[1]])) {
         }
         names(statW) <- metrics
 
-        if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse","kge","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - stat[, objFn, with = FALSE] 
+        if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse","kge","kge_lf","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - stat[, objFn, with = FALSE] 
         if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new_streamflow <- statW[objFn] 
 
       # Archive results
