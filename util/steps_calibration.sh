@@ -1,5 +1,8 @@
 #!/bin/sh -f
 
+module purge
+conda deactivate
+
 fold_running=edit_this_to_your_run_dir/gpfsm/dnb06/projects/p225/amazrooe/calibration/test_calib_large # Note: update the running dir
 source /discover/nobackup/projects/lis-ndmc/isrivast/python_envs/py_discover-mil/bin/activate
 export QSCACHE_BYPASS=true
