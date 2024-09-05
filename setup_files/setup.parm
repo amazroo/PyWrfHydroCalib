@@ -97,7 +97,7 @@ stripCalibHours = 120
 # 2 - We will launch with qsub and monitor via qstat command.
 # 3 - We will launch with slurm with srun and monitor via squeue command.
 # 4 - No job scheduler. Run via MPI.
-# 5 - RunType for LIS/WRFHydro
+# 5 - RunType for LIS/WRFHydro on Discover HPC
 # jobRunType is how you plan on executing the WRF-Hydro simulations
 jobRunType = 5
 # Specify the MPI command to use.
