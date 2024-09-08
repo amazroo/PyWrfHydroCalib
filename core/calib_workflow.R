@@ -12,6 +12,7 @@ library(plyr)
 library(hydroGOF)
 library(zoo)
 #library(qmap)
+library(dplyr)
 
 #########################################################
 # SETUP
