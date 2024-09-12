@@ -712,6 +712,8 @@ def generateMpiScript(jobData,gageID,basinNum,runDir,gageMeta):
         fileObj.write('#!/bin/bash\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
+        inStr = 'for FILE in CHANOBS_DOMAIN1.nc*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n' # Preventing model to append new run to the previous output file
+        fileObj.write(inStr)
         if len(jobData.cpuPinCmd) > 0:
             inStr = jobData.mpiCmd + " " + str(jobData.nCoresMod) + " " + jobData.cpuPinCmd + \
                     str(jobData.gageBegModelCpu[basinNum]) + "-" + \
