@@ -1161,7 +1161,7 @@ def generateSpinupGroupScript(jobData,groupNum,scriptPath,topDir):
             if len(jobData.acctKey.strip()) > 0:
                 inStr = "#SBATCH --account=" + str(jobData.acctKey) + '\n'
                 fileObj.write(inStr)
-            inStr = "#SBATCH --time=12:00:00\n"
+            inStr = "#SBATCH --time=24:00:00\n"
             fileObj.write(inStr)
             if len(jobData.queName.strip()) > 0:
                 inStr = "#SBATCH --partition=" + str(jobData.queName) + "\n"
@@ -1181,7 +1181,7 @@ def generateSpinupGroupScript(jobData,groupNum,scriptPath,topDir):
             inStr = "#SBATCH --constraint=mil"
             fileObj.write(inStr)
             fileObj.write("\n")
-            inStr = "#SBATCH --qos=allnccs"
+            inStr = "#SBATCH --qos=long"
             fileObj.write(inStr)
             fileObj.write("\n")
             inStr = 'export NLC_DIR="/discover/nobackup/projects/lis-ndmc/tlahmers/LIS_WRF-Hydro_Run"'
