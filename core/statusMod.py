@@ -2181,7 +2181,7 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId, programType):
     if jobData.jobRunType == 3 or jobData.jobRunType == 5:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
-        sq_format = '  --format=\"%.18i %.9P %.32j %.8u %.2t %.10M %.6D %R\"'
+        sq_format = '  --format=\"%.18i %.9P %.32j %.8u %.2t %.10M %.6D\"'
         cmd_0 = "squeue -u " + str(jobData.owner) + sq_format + ' | head -1' + ' > ' + csvPath
         cmd_1 = "squeue -u " + str(jobData.owner) + sq_format + ' | grep \"WSG_\|WCG_\|WVG_\"' + ' >> ' + csvPath
         try:

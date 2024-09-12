@@ -255,7 +255,7 @@ if (cyclecount > 0) {
          }
 
           # here is a solution for when all the streamflow simulated are zerors
-#          if (length(unique(chrt$q_cms)) == 1) chrt$q_cms <- rnorm(length(chrt$q_cms), mean = 0.01, sd = 0.1)
+          # if (length(unique(chrt$q_cms)) == 1) chrt$q_cms <- rnorm(length(chrt$q_cms), mean = 0.01, sd = 0.1)
          
          # Check for empty output
          if (nrow(chrt) < 1) {
