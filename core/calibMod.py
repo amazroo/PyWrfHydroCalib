@@ -1691,8 +1691,6 @@ def generateMpiScript(jobData,gageID,basinNum,runDir):
         fileObj.write(inStr)
         inStr = 'for FILE in PET*.ESMF_LogFile; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
-        inStr = 'for FILE in PET*.ESMF_LogFile; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
-        fileObj.write(inStr)
 
         if len(jobData.cpuPinCmd) > 0:
             inStr = jobData.mpiCmd + " " + str(jobData.nCoresMod) + " " + jobData.cpuPinCmd + \
