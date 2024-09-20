@@ -826,7 +826,7 @@ def createLisNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag)
     lis_config_content = lis_config_content.replace('Output parameters:', f"Output parameters: {jobData.output_parameters}")
     lis_config_content = lis_config_content.replace('Output model restart files:', f"Output model restart files: {jobData.output_model_restart_files}")
     if (genFlag == 1): #If it is calibration step (flag=1) do not write any .nc files, if not (i.e., for spinup and validation runs) use LSM output config from setup.parm
-        lis_config_content = lis_config_content.replace('Output methodology:', 'Output methodology: none')
+        lis_config_content = lis_config_content.replace('Output methodology:', 'Output methodology: "none"')
     else:
         lis_config_content = lis_config_content.replace('Output methodology:', f'Output methodology: "{jobData.output_methodology}"')
     lis_config_content = lis_config_content.replace('Output data format:', f'Output data format: "{jobData.output_data_format}"')
