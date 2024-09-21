@@ -1000,18 +1000,16 @@ def generateCalibGroupScript(jobData,groupNum,scriptPath,topDir):
             inStr = "#SBATCH --output=" + jobData.jobDir + "/WCG_" + str(jobData.jobID) + "_" + \
                     str(groupNum) + ".out\n"
             fileObj.write(inStr)
-            inStr = "#SBATCH -e " + jobData.jobDir + "/WCG_" + str(jobData.jobID) + "_" + \
+            inStr = "#SBATCH --error=" + jobData.jobDir + "/WCG_" + str(jobData.jobID) + "_" + \
                         str(groupNum) + ".err\n"
             fileObj.write(inStr)
-            inStr = "#SBATCH -N " + str(jobData.nNodesMod) + '\n'
+            inStr = "#SBATCH --nodes=" + str(jobData.nNodesMod) + "\n"
             fileObj.write(inStr)
-            inStr = "#SBATCH -n " + str(jobData.nCoresMod) + "\n"
+            inStr = "#SBATCH --ntasks=120" + "\n" #+ str(jobData.nCoresMod) + "\n"
             fileObj.write(inStr)
-            fileObj.write("\n")
-            inStr = "#SBATCH --constraint=mil"
+            inStr = "#SBATCH --constraint=mil" + "\n"
             fileObj.write(inStr)
-            fileObj.write("\n")
-            inStr = "#SBATCH --qos=allnccs"
+            inStr = "#SBATCH --qos=allnccs" + "\n"
             fileObj.write(inStr)
             fileObj.write("\n")
             inStr = 'export NLC_DIR="/discover/nobackup/projects/lis-ndmc/tlahmers/LIS_WRF-Hydro_Run"'
